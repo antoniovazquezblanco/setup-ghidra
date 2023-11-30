@@ -32737,20 +32737,40 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.installFromUrl = void 0;
 const tc = __importStar(__nccwpck_require__(7784));
 const core = __importStar(__nccwpck_require__(2186));
+const path = __importStar(__nccwpck_require__(1017));
+const fs = __importStar(__nccwpck_require__(7147));
+const crypto = __importStar(__nccwpck_require__(6113));
+function downloadWithExtension(url) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const extension = path.extname(url);
+        let asset_path = yield tc.downloadTool(url);
+        if (path.extname(asset_path) !== extension) {
+            fs.renameSync(asset_path, asset_path + extension);
+            return asset_path + extension;
+        }
+        return asset_path;
+    });
+}
 function installFromUrl(url) {
     return __awaiter(this, void 0, void 0, function* () {
+        // Decide on a tool version based on the url...
+        const version = crypto.createHash("sha1").update(url).digest("hex");
         // Check if the tool is in the cache...
-        let ghidra_path = tc.find("ghidra", url);
+        let ghidra_path = tc.find("ghidra", version);
         if (ghidra_path) {
             core.info(`Tool found in cache at '${ghidra_path}'...`);
             return ghidra_path;
         }
         // Tool is not in cache, install it...
         console.info(`Downloading Ghidra from ${url}`);
-        let asset_path = yield tc.downloadTool(url);
+        let asset_path = yield downloadWithExtension(url);
+        console.info(`Extracting Ghidra in ${asset_path}...`);
         ghidra_path = yield tc.extractZip(asset_path, undefined);
+        console.info(`Locating real Ghidra folder...`);
+        ghidra_path = path.join(ghidra_path, fs.readdirSync(ghidra_path)[0]);
         // Let the cache know...
-        return yield tc.cacheDir(ghidra_path, "ghidra", url);
+        console.info(`Caching Ghidra in ${ghidra_path}...`);
+        return tc.cacheDir(ghidra_path, "ghidra", version);
     });
 }
 exports.installFromUrl = installFromUrl;
@@ -32816,7 +32836,7 @@ function run() {
                 core.debug("The download_url input was provided; ignoring owner, repo and version inputs...");
             }
             // Install Ghidra
-            let ghidra_path = installer.installFromUrl(download_url);
+            let ghidra_path = yield installer.installFromUrl(download_url);
             // Set environmental variable
             core.exportVariable("GHIDRA_INSTALL_DIR", ghidra_path);
         }
