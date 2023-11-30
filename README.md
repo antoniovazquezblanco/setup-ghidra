@@ -1,10 +1,14 @@
-[![Actions Status](https://github.com/er28-0652/setup-ghidra/workflows/Main%20workflow/badge.svg)](https://github.com/er28-0652/setup-ghidra/actions)
+[![CI](https://github.com/antoniovazquezblanco/setup-ghidra/actions/workflows/main.yml/badge.svg)](https://github.com/antoniovazquezblanco/setup-ghidra/actions/workflows/main.yml)
 
 # setup-ghidra
 
-This action sets up a Ghidra environment for use in actions by:
+This action sets up a Ghidra environment for use in actions.
+Specific Ghidra versions can be selected and even releases from custom forks can be used.
 
-- optionally installing a version of Ghidra and adding to GHIDRA_INSTALL_PATH. The action will fail if no matching versions are found. To check available Ghidra version, see release note in https://ghidra-sre.org.
+This action will automatically set the `GHIDRA_INSTALL_PATH` variable in your environment.
+
+The action will fail if no matching versions are found.
+
 
 ## Inputs
 
