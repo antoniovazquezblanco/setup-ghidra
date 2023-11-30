@@ -1,7 +1,7 @@
 {
   "name": "setup-ghidra",
   "version": "1.0.0",
-  "description": "This action sets up a Ghidra environment for use in actions by:",
+  "description": "This action sets up a Ghidra environment for use in actions.",
   "main": "index.js",
   "scripts": {
     "build": "ncc build src/setup-ghidra.ts",
@@ -9,35 +9,20 @@
     "format-check": "prettier --check **/*.ts",
     "test": "jest"
   },
-  "jest": {
-    "verbose": true
-  },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Antonio Vázquez Blanco",
+  "license": "MIT",
   "devDependencies": {
-    "@types/jest": "^24.0.25",
-    "husky": "^3.1.0",
-    "jest": "^24.9.0",
-    "jest-circus": "^24.9.0",
-    "prettier": "^1.19.1",
-    "pretty-quick": "^2.0.1",
-    "ts-jest": "^24.2.0",
-    "ts-node": "^8.5.4",
-    "typescript": "^3.7.4"
+    "@types/jest": "^29.5.10",
+    "@vercel/ncc": "^0.38.1",
+    "jest": "^29.7.0",
+    "prettier": "^3.1.0",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1"
   },
   "dependencies": {
-    "@actions/core": "^1.2.6",
-    "@actions/github": "^2.0.0",
-    "@actions/io": "^1.0.1",
-    "@actions/tool-cache": "^1.1.2",
-    "@octokit/rest": "^18.7.0",
-    "@types/node": "^13.1.2",
-    "typed-rest-client": "^1.7.1"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged"
-    }
+    "@actions/core": "^1.10.1",
+    "@actions/tool-cache": "^2.0.1",
+    "@octokit/rest": "^20.0.2"
   }
 }

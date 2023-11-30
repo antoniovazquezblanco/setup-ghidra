@@ -10,29 +10,62 @@ This action will automatically set the `GHIDRA_INSTALL_PATH` variable in your en
 The action will fail if no matching versions are found.
 
 
-## Inputs
-
-### `version`
-
-**Required** Version of Ghidra. Default `"latest"`.
-
 ## Usage
 
-Before setup Ghidra, you need to setup Java 11.0.x environment using `actions/setup-java`.
-This action doesn't use Docker, so you can use both Windows, Linux and MacOS for `runs-on` environment.
+**Basic:**
 
 ```yaml
-runs-on: ${{ matrix.os }}
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+- uses: antoniovazquezblanco/setup-ghidra@master
+```
+
+**Advanced:**
+
+```yaml
 strategy:
   matrix:
-    os: [macos-latest, windows-latest, ubuntu-latest]
+    ghidra:
+      - "10.4"
+      - "10.3"
+      - "10.2"
+
 steps:
-  - uses: actions/checkout@v1
-  - uses: actions/setup-java@v1
-    java-version: "11.0.x"
-    java-package: jdk
-    architecture: x64
-  - uses: er28-0652/setup-ghidra@master
-    with:
-      version: "9.1.1"
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+- uses: antoniovazquezblanco/setup-ghidra@master
+  with:
+    version: ${{ matrix.ghidra }}
+
+- name: Build something with Ghidra ${{ matrix.version }}
+  uses: gradle/gradle-build-action@v2.4.2
+  with:
+    gradle-version: 7.3
+    arguments: -PGHIDRA_INSTALL_DIR=${{ env.GHIDRA_INSTALL_DIR }}
+```
+
+For a full reference of action parameters see [action.yml](action.yml)
+
+```yaml
+- uses: antoniovazquezblanco/setup-ghidra@master
+  with:
+    # A distribution download URL to directly download and install it.
+    # If this argument is specified, both the repository and version arguments
+    # will be ignored.
+    # Example:
+    # download_url: 'https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_10.4_build/ghidra_10.4_PUBLIC_20230928.zip'
+    download_url: ''
+
+    # The owner of the repository to look for Ghidra releases. By default, NSA
+    # official user is used.
+    owner: 'NationalSecurityAgency'
+
+    # A repository on which to find releases. By default, NSA official repo
+    # name is used.
+    repository: 'ghidra'
+
+    # Version spec to use. Please use SemVer notation. It also accepts the
+    # 'latest' alias to download the latest version available.
+    version: 'latest'
 ```

@@ -1,19 +1,24 @@
----
-name: setup-ghidra
-author: er28-0652
-description: setup Ghidra environment
+name: 'setup-ghidra'
+author: 'antoniovazquezblanco'
+description: 'Setup Ghidra environment'
+
 inputs:
+  download_url:
+    description: 'Direct download url to a Ghidra distribution archive.'
+  owner:
+    description: 'Owner of the repository to fetch Ghidra from.'
+    default: 'NationalSecurityAgency'
+  repo:
+    description: 'Repository to fetch Ghidra from.'
+    default: 'ghidra'
   version:
-    description: version of Ghidra
-    required: true
-    default: latest
-  directLink:
-    description: direct link to the archive file (for custom forks)
-    required: false
-    default: ""
+    description: 'Ghidra version.'
+    default: 'latest'
+
 runs:
-  using: "node12"
-  main: "dist/index.js"
+  using: 'node20'
+  main: 'dist/index.js'
+
 branding:
-  icon: "code"
-  color: "yellow"
+  icon: 'code'
+  color: 'yellow'
