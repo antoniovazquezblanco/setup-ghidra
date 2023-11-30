@@ -1,8 +1,8 @@
 import * as tc from "@actions/tool-cache";
 import * as core from "@actions/core";
-import * as path from 'path';
-import * as fs from 'fs';
-import * as crypto from 'crypto';
+import * as path from "path";
+import * as fs from "fs";
+import * as crypto from "crypto";
 
 async function downloadWithExtension(url: string): Promise<string> {
   const extension = path.extname(url);
@@ -16,7 +16,7 @@ async function downloadWithExtension(url: string): Promise<string> {
 
 export async function installFromUrl(url: string): Promise<string> {
   // Decide on a tool version based on the url...
-  const version = crypto.createHash('sha1').update(url).digest('hex');
+  const version = crypto.createHash("sha1").update(url).digest("hex");
 
   // Check if the tool is in the cache...
   let ghidra_path = tc.find("ghidra", version);
@@ -30,7 +30,7 @@ export async function installFromUrl(url: string): Promise<string> {
   let asset_path = await downloadWithExtension(url);
   console.info(`Extracting Ghidra in ${asset_path}...`);
   ghidra_path = await tc.extractZip(asset_path, undefined);
-  console.info(`Locating real Ghidra folder...`)
+  console.info(`Locating real Ghidra folder...`);
   ghidra_path = path.join(ghidra_path, fs.readdirSync(ghidra_path)[0]);
 
   // Let the cache know...

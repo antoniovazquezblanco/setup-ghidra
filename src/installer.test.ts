@@ -2,7 +2,7 @@ import path = require("path");
 import io = require("@actions/io");
 import * as github from "./github";
 import * as installer from "./installer";
-import * as fs from 'fs';
+import * as fs from "fs";
 
 describe("Installer tests", () => {
   let url = "";
@@ -25,8 +25,12 @@ describe("Installer tests", () => {
     await io.rmRF(path.join(__dirname, "runner"));
   });
 
-  it("Installs Ghidra", async () => {
-    let tool_path = await installer.installFromUrl(url);
-    expect(fs.existsSync(path.join(tool_path, "ghidraRun"))).toBe(true);
-  }, 10*60*1000);
+  it(
+    "Installs Ghidra",
+    async () => {
+      let tool_path = await installer.installFromUrl(url);
+      expect(fs.existsSync(path.join(tool_path, "ghidraRun"))).toBe(true);
+    },
+    10 * 60 * 1000,
+  );
 });
