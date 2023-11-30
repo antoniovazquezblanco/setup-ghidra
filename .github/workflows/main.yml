@@ -26,12 +26,12 @@ jobs:
       - name: Test
         run: npm test
 
-    release:
-      needs: run
-      permissions:
-        contents: write
-      runs-on: ubuntu-latest
-      steps:
+  release:
+    needs: run
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
       - name: Release
         uses: ncipollo/release-action@v1
         if: github.event_name == 'push' && contains(github.ref, 'refs/tags/v')
