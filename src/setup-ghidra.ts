@@ -21,7 +21,7 @@ async function run() {
     }
 
     // Install Ghidra
-    let ghidra_path = installer.installFromUrl(download_url);
+    let ghidra_path = await installer.installFromUrl(download_url);
 
     // Set environmental variable
     core.exportVariable("GHIDRA_INSTALL_DIR", ghidra_path);
