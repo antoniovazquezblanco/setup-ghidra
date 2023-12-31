@@ -1,7 +1,11 @@
-import * as github from "./github";
+import { Octokit } from "@octokit/rest";
+import * as github_helper from "./github_helper";
+
+const octokit = new Octokit();
 
 test("Verify Ghidra 10.4 download URL", async () => {
-  const url = await github.getReleaseUrlByVersion(
+  const url = await github_helper.getReleaseUrlByVersion(
+    octokit,
     "NationalSecurityAgency",
     "ghidra",
     "10.4",
@@ -12,7 +16,8 @@ test("Verify Ghidra 10.4 download URL", async () => {
 });
 
 test("Verify latest Ghidra URL", async () => {
-  const url = await github.getReleaseUrlByVersion(
+  const url = await github_helper.getReleaseUrlByVersion(
+    octokit,
     "NationalSecurityAgency",
     "ghidra",
     "latest",
@@ -27,7 +32,8 @@ test("Verify latest Ghidra URL", async () => {
 test("Verify exception on wrong version", async () => {
   let thrown = false;
   try {
-    const url = await github.getReleaseUrlByVersion(
+    const url = await github_helper.getReleaseUrlByVersion(
+      octokit,
       "NationalSecurityAgency",
       "ghidra",
       "dummyversion",

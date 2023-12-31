@@ -1,6 +1,7 @@
 import path = require("path");
 import io = require("@actions/io");
-import * as github from "./github";
+import { Octokit } from "@octokit/rest";
+import * as github_helper from "./github_helper";
 import * as installer from "./installer";
 import * as fs from "fs";
 
@@ -12,8 +13,11 @@ describe("Installer tests", () => {
     process.env["RUNNER_TOOL_CACHE"] = path.join(__dirname, "runner", "tools");
     process.env["RUNNER_TEMP"] = path.join(__dirname, "runner", "temp");
 
+    const octokit = new Octokit();
+
     // Get a valid URL for installation...
-    url = await github.getReleaseUrlByVersion(
+    url = await github_helper.getReleaseUrlByVersion(
+      octokit,
       "NationalSecurityAgency",
       "ghidra",
       "latest",

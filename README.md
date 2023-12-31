@@ -36,6 +36,7 @@ steps:
 - uses: actions/setup-java@v4
 - uses: antoniovazquezblanco/setup-ghidra@master
   with:
+    auth_token: ${{ secrets.GITHUB_TOKEN }}
     version: ${{ matrix.ghidra }}
 
 - name: Build something with Ghidra ${{ matrix.version }}
@@ -68,4 +69,7 @@ For a full reference of action parameters see [action.yml](action.yml)
     # Version spec to use. Please use SemVer notation. It also accepts the
     # 'latest' alias to download the latest version available.
     version: 'latest'
+
+    # Github authentication token to avoid API limiting.
+    auth_token: ${{ secrets.GITHUB_TOKEN }}
 ```

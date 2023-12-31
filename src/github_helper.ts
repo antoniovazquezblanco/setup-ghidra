@@ -1,8 +1,7 @@
-import { Octokit } from "@octokit/rest";
-
-const octokit = new Octokit();
+import { GitHub } from "@actions/github/lib/utils";
 
 async function getReleaseDownloadUrl(
+  octokit: InstanceType<typeof GitHub>,
   owner: string,
   repo: string,
   release_id: number,
@@ -16,6 +15,7 @@ async function getReleaseDownloadUrl(
 }
 
 async function getReleaseUrlByTag(
+  octokit: InstanceType<typeof GitHub>,
   owner: string,
   repo: string,
   tag: string,
@@ -31,10 +31,11 @@ async function getReleaseUrlByTag(
       `Could not find tag '${tagName}' in repo '${repo}' by the owner '${owner}'! Response status was ${response.status}...`,
     );
   }
-  return getReleaseDownloadUrl(owner, repo, response.data.id);
+  return getReleaseDownloadUrl(octokit, owner, repo, response.data.id);
 }
 
 async function getLatestReleaseUrl(
+  octokit: InstanceType<typeof GitHub>,
   owner: string,
   repo: string,
 ): Promise<string> {
@@ -47,17 +48,18 @@ async function getLatestReleaseUrl(
       `Could not get the latest release from repo '${repo}' by the owner '${owner}'! Response status was ${response.status}...`,
     );
   }
-  return getReleaseDownloadUrl(owner, repo, response.data.id);
+  return getReleaseDownloadUrl(octokit, owner, repo, response.data.id);
 }
 
 export async function getReleaseUrlByVersion(
+  octokit: InstanceType<typeof GitHub>,
   owner: string,
   repo: string,
   version: string,
 ) {
   if (version == "latest") {
-    return getLatestReleaseUrl(owner, repo);
+    return getLatestReleaseUrl(octokit, owner, repo);
   } else {
-    return getReleaseUrlByTag(owner, repo, version);
+    return getReleaseUrlByTag(octokit, owner, repo, version);
   }
 }

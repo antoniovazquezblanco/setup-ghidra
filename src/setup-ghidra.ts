@@ -1,5 +1,6 @@
 import * as core from "@actions/core";
-import * as github from "./github";
+import * as github from "@actions/github";
+import * as github_helper from "./github_helper";
 import * as installer from "./installer";
 
 async function run() {
@@ -9,11 +10,18 @@ async function run() {
     let owner = core.getInput("owner");
     let repo = core.getInput("repo");
     let version = core.getInput("version");
+    let auth_token = core.getInput("auth_token");
 
     // First obtain a valid download url..
     if (!download_url) {
       core.debug("Using owner, repo and version inputs to locate a release...");
-      download_url = await github.getReleaseUrlByVersion(owner, repo, version);
+      const octokit = github.getOctokit(auth_token);
+      download_url = await github_helper.getReleaseUrlByVersion(
+        octokit,
+        owner,
+        repo,
+        version,
+      );
     } else {
       core.debug(
         "The download_url input was provided; ignoring owner, repo and version inputs...",
