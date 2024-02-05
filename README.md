@@ -34,16 +34,14 @@ strategy:
 steps:
 - uses: actions/checkout@v4
 - uses: actions/setup-java@v4
+- uses: gradle/actions/setup-gradle@v3
 - uses: antoniovazquezblanco/setup-ghidra@v1.2.0
   with:
     auth_token: ${{ secrets.GITHUB_TOKEN }}
     version: ${{ matrix.ghidra }}
 
 - name: Build something with Ghidra ${{ matrix.ghidra }}
-  uses: gradle/gradle-build-action@v2.4.2
-  with:
-    gradle-version: 7.3
-    arguments: -PGHIDRA_INSTALL_DIR=${{ env.GHIDRA_INSTALL_DIR }}
+  run: gradle -PGHIDRA_INSTALL_DIR=${{ env.GHIDRA_INSTALL_DIR }}
 ```
 
 For a full reference of action parameters see [action.yml](action.yml)
