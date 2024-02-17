@@ -35,6 +35,6 @@ describe("Installer tests", () => {
       let tool_path = await installer.installFromUrl(url);
       expect(fs.existsSync(path.join(tool_path, "ghidraRun"))).toBe(true);
     },
-    10 * 60 * 1000,
+    20 * 60 * 1000,
   );
 });

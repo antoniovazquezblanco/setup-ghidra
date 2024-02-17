@@ -1,6 +1,6 @@
 {
   "name": "setup-ghidra",
-  "version": "1.0.0",
+  "version": "1.2.1",
   "description": "This action sets up a Ghidra environment for use in actions.",
   "main": "index.js",
   "scripts": {
