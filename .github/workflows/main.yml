@@ -27,7 +27,7 @@ jobs:
         run: npm run build
 
       - name: Check build status
-        run: git diff --exit-code && echo "No changes were found :)" || {echo "Changes found after build.\nPlease run \"npm run build\" and commit the changes in the dist directory."; exit 1}
+        run: git diff --exit-code --quiet && echo "No changes were found :)" || { echo -e "Changes found after build.\nPlease run \"npm run build\" and commit the changes in the dist directory."; exit 1; }
 
       - name: Test
         run: npm test
