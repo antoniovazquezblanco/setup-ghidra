@@ -23,6 +23,12 @@ jobs:
       - name: Lint
         run: npm run format-check
 
+      - name: Build
+        run: npm run build
+
+      - name: Check build status
+        run: git diff --exit-code && echo "No changes were found :)" || {echo "Changes found after build.\nPlease run \"npm run build\" and commit the changes in the dist directory."; exit 1}
+
       - name: Test
         run: npm test
 
