@@ -1,7 +1,7 @@
-import { GitHub } from "@actions/github/lib/utils";
+import { Octokit } from "@octokit/rest";
 
 async function getReleaseDownloadUrl(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: Octokit,
   owner: string,
   repo: string,
   release_id: number,
@@ -15,7 +15,7 @@ async function getReleaseDownloadUrl(
 }
 
 async function getReleaseUrlByTag(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: Octokit,
   owner: string,
   repo: string,
   tag: string,
@@ -35,7 +35,7 @@ async function getReleaseUrlByTag(
 }
 
 async function getLatestReleaseUrl(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: Octokit,
   owner: string,
   repo: string,
 ): Promise<string> {
@@ -52,7 +52,7 @@ async function getLatestReleaseUrl(
 }
 
 export async function getReleaseUrlByVersion(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: Octokit,
   owner: string,
   repo: string,
   version: string,
