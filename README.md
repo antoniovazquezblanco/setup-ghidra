@@ -18,7 +18,7 @@ The action will fail if no matching versions are found.
 steps:
 - uses: actions/checkout@v4
 - uses: actions/setup-java@v4
-- uses: antoniovazquezblanco/setup-ghidra@v1.2.0
+- uses: antoniovazquezblanco/setup-ghidra@v1.2.4
 ```
 
 **Advanced:**
@@ -27,19 +27,18 @@ steps:
 strategy:
   matrix:
     ghidra:
+      - "11.1.1"
+      - "11.0.3"
       - "10.4"
-      - "10.3"
-      - "10.2"
 
 steps:
 - uses: actions/checkout@v4
 - uses: actions/setup-java@v4
 - uses: gradle/actions/setup-gradle@v3
-- uses: antoniovazquezblanco/setup-ghidra@v1.2.0
+- uses: antoniovazquezblanco/setup-ghidra@v1.2.4
   with:
     auth_token: ${{ secrets.GITHUB_TOKEN }}
     version: ${{ matrix.ghidra }}
-
 - name: Build something with Ghidra ${{ matrix.ghidra }}
   run: gradle -PGHIDRA_INSTALL_DIR=${{ env.GHIDRA_INSTALL_DIR }}
 ```
@@ -47,7 +46,7 @@ steps:
 For a full reference of action parameters see [action.yml](action.yml)
 
 ```yaml
-- uses: antoniovazquezblanco/setup-ghidra@v1.2.0
+- uses: antoniovazquezblanco/setup-ghidra@v1.2.4
   with:
     # A distribution download URL to directly download and install it.
     # If this argument is specified, both the repository and version arguments
@@ -69,5 +68,6 @@ For a full reference of action parameters see [action.yml](action.yml)
     version: 'latest'
 
     # Github authentication token to avoid API limiting.
+    # This is optional.
     auth_token: ${{ secrets.GITHUB_TOKEN }}
 ```
