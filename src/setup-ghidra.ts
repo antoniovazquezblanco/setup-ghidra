@@ -1,6 +1,4 @@
 import * as core from "@actions/core";
-import { getOctokitOptions } from "@actions/github/lib/utils";
-import { Octokit } from "@octokit/rest";
 import * as github_helper from "./github_helper";
 import * as installer from "./installer";
 
@@ -16,7 +14,7 @@ async function run() {
     // First obtain a valid download url..
     if (!download_url) {
       core.debug("Using owner, repo and version inputs to locate a release...");
-      const octokit = new Octokit(getOctokitOptions(auth_token));
+      const octokit = github_helper.getOctokit(auth_token);
       download_url = await github_helper.getReleaseUrlByVersion(
         octokit,
         owner,

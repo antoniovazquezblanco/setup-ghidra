@@ -7805,7 +7805,7 @@ var import_endpoint = __nccwpck_require__(9440);
 var import_universal_user_agent = __nccwpck_require__(5030);
 
 // pkg/dist-src/version.js
-var VERSION = "8.3.1";
+var VERSION = "8.4.0";
 
 // pkg/dist-src/is-plain-object.js
 function isPlainObject(value) {
@@ -7830,7 +7830,7 @@ function getBufferResponse(response) {
 
 // pkg/dist-src/fetch-wrapper.js
 function fetchWrapper(requestOptions) {
-  var _a, _b, _c;
+  var _a, _b, _c, _d;
   const log = requestOptions.request && requestOptions.request.log ? requestOptions.request.log : console;
   const parseSuccessResponseBody = ((_a = requestOptions.request) == null ? void 0 : _a.parseSuccessResponseBody) !== false;
   if (isPlainObject(requestOptions.body) || Array.isArray(requestOptions.body)) {
@@ -7851,8 +7851,9 @@ function fetchWrapper(requestOptions) {
   return fetch(requestOptions.url, {
     method: requestOptions.method,
     body: requestOptions.body,
+    redirect: (_c = requestOptions.request) == null ? void 0 : _c.redirect,
     headers: requestOptions.headers,
-    signal: (_c = requestOptions.request) == null ? void 0 : _c.signal,
+    signal: (_d = requestOptions.request) == null ? void 0 : _d.signal,
     // duplex must be set if request.body is ReadableStream or Async Iterables.
     // See https://fetch.spec.whatwg.org/#dom-requestinit-duplex.
     ...requestOptions.body && { duplex: "half" }
@@ -35637,7 +35638,7 @@ function wrappy (fn, cb) {
 /***/ }),
 
 /***/ 6932:
-/***/ (function(__unused_webpack_module, exports) {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
@@ -35651,7 +35652,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getReleaseUrlByVersion = void 0;
+exports.getReleaseUrlByVersion = exports.getOctokit = void 0;
+const rest_1 = __nccwpck_require__(5375);
+const utils_1 = __nccwpck_require__(3030);
+function getOctokit(auth_token) {
+    let options = {};
+    if (auth_token) {
+        options = (0, utils_1.getOctokitOptions)(auth_token, options);
+    }
+    return new rest_1.Octokit(options);
+}
+exports.getOctokit = getOctokit;
 function getReleaseDownloadUrl(octokit, owner, repo, release_id) {
     return __awaiter(this, void 0, void 0, function* () {
         let assets = yield octokit.rest.repos.listReleaseAssets({
@@ -35824,8 +35835,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const utils_1 = __nccwpck_require__(3030);
-const rest_1 = __nccwpck_require__(5375);
 const github_helper = __importStar(__nccwpck_require__(6932));
 const installer = __importStar(__nccwpck_require__(2574));
 function run() {
@@ -35840,7 +35849,7 @@ function run() {
             // First obtain a valid download url..
             if (!download_url) {
                 core.debug("Using owner, repo and version inputs to locate a release...");
-                const octokit = new rest_1.Octokit((0, utils_1.getOctokitOptions)(auth_token));
+                const octokit = github_helper.getOctokit(auth_token);
                 download_url = yield github_helper.getReleaseUrlByVersion(octokit, owner, repo, version);
             }
             else {

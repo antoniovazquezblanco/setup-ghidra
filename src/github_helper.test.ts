@@ -1,7 +1,12 @@
 import { Octokit } from "@octokit/rest";
 import * as github_helper from "./github_helper";
 
-const octokit = new Octokit();
+test("Oktokit getter", () => {
+  const octokit = github_helper.getOctokit();
+  expect(octokit).not.toBe(null);
+});
+
+const octokit = github_helper.getOctokit();
 
 test("Verify Ghidra 10.4 download URL", async () => {
   const url = await github_helper.getReleaseUrlByVersion(

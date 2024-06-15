@@ -1,4 +1,13 @@
 import { Octokit } from "@octokit/rest";
+import { getOctokitOptions } from "@actions/github/lib/utils";
+
+export function getOctokit(auth_token?: string) {
+  let options = {};
+  if (auth_token) {
+    options = getOctokitOptions(auth_token, options);
+  }
+  return new Octokit(options);
+}
 
 async function getReleaseDownloadUrl(
   octokit: Octokit,

@@ -16,7 +16,6 @@ inputs:
     default: 'latest'
   auth_token:
     description: 'GitHub token for authentication.'
-    default: ''
 
 runs:
   using: 'node20'
