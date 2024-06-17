@@ -6,34 +6,55 @@ import * as crypto from "crypto";
 
 async function downloadWithExtension(url: string): Promise<string> {
   const extension = path.extname(url);
-  let asset_path = await tc.downloadTool(url);
-  if (path.extname(asset_path) !== extension) {
-    fs.renameSync(asset_path, asset_path + extension);
-    return asset_path + extension;
+  let assetPath = await tc.downloadTool(url);
+  if (path.extname(assetPath) !== extension) {
+    fs.renameSync(assetPath, assetPath + extension);
+    return assetPath + extension;
   }
-  return asset_path;
+  return assetPath;
 }
 
-export async function installFromUrl(url: string): Promise<string> {
+async function calculateSha256Hash(filePath: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const hash = crypto.createHash('sha256');
+    const stream = fs.createReadStream(filePath);
+
+    stream.on('data', (data) => hash.update(data));
+    stream.on('end', () => resolve(hash.digest('hex')));
+    stream.on('error', (error) => reject(error));
+  });
+}
+
+export async function installFromUrl(url: string, sha256sum: string): Promise<string> {
   // Decide on a tool version based on the url...
   const version = crypto.createHash("sha1").update(url).digest("hex");
 
   // Check if the tool is in the cache...
-  let ghidra_path = tc.find("ghidra", version);
-  if (ghidra_path) {
-    core.info(`Tool found in cache at '${ghidra_path}'...`);
-    return ghidra_path;
+  let ghidraPath = tc.find("ghidra", version);
+  if (ghidraPath) {
+    core.info(`Tool found in cache at '${ghidraPath}'...`);
+    return ghidraPath;
   }
 
   // Tool is not in cache, install it...
   console.info(`Downloading Ghidra from ${url}`);
-  let asset_path = await downloadWithExtension(url);
-  console.info(`Extracting Ghidra in ${asset_path}...`);
-  ghidra_path = await tc.extractZip(asset_path, undefined);
+  let assetPath = await downloadWithExtension(url);
+
+  if (sha256sum != 'skip') {
+    console.info(`Verifying downloaded file hash...`);
+    let fileHash = await calculateSha256Hash(assetPath);
+    console.info(`Downloaded file sha256sum is ${fileHash}`);
+    if(fileHash != sha256sum)
+      throw new Error('File validation error! SHA256 sum does not match!');
+  }
+
+  console.info(`Extracting Ghidra in ${assetPath}...`);
+  ghidraPath = await tc.extractZip(assetPath, undefined);
+
   console.info(`Locating real Ghidra folder...`);
-  ghidra_path = path.join(ghidra_path, fs.readdirSync(ghidra_path)[0]);
+  ghidraPath = path.join(ghidraPath, fs.readdirSync(ghidraPath)[0]);
 
   // Let the cache know...
-  console.info(`Caching Ghidra in ${ghidra_path}...`);
-  return tc.cacheDir(ghidra_path, "ghidra", version);
+  console.info(`Caching Ghidra in ${ghidraPath}...`);
+  return await tc.cacheDir(ghidraPath, "ghidra", version);
 }

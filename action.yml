@@ -14,6 +14,9 @@ inputs:
   version:
     description: 'Ghidra version.'
     default: 'latest'
+  sha256sum:
+    description: 'SHA256 sum to check the release against. You may use the keywords "skip" to not perform any check or "online" to get the sum from release notes.'
+    default: 'online'
   auth_token:
     description: 'GitHub token for authentication.'
 

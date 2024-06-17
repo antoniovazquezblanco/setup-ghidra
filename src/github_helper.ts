@@ -9,26 +9,42 @@ export function getOctokit(auth_token?: string) {
   return new Octokit(options);
 }
 
-async function getReleaseDownloadUrl(
+async function getRelease(
   octokit: Octokit,
   owner: string,
   repo: string,
-  release_id: number,
-): Promise<string> {
-  let assets = await octokit.rest.repos.listReleaseAssets({
-    owner: owner,
-    repo: repo,
-    release_id: release_id,
-  });
-  return assets.data[0].browser_download_url;
+  version: string
+) : Promise <any> {
+  if (version == "latest") {
+    return getLatestRelease(octokit, owner, repo);
+  } else {
+    return getReleaseByTag(octokit, owner, repo, version);
+  }
 }
 
-async function getReleaseUrlByTag(
+async function getLatestRelease(
+  octokit: Octokit,
+  owner: string,
+  repo: string,
+): Promise<any> {
+  let response = await octokit.rest.repos.getLatestRelease({
+    owner: owner,
+    repo: repo,
+  });
+  if (response.status != 200) {
+    throw new Error(
+      `Could not get the latest release from repo '${repo}' by the owner '${owner}'! Response status was ${response.status}...`,
+    );
+  }
+  return response.data;
+}
+
+async function getReleaseByTag(
   octokit: Octokit,
   owner: string,
   repo: string,
   tag: string,
-): Promise<string> {
+): Promise<any> {
   let tagName = `Ghidra_${tag}_build`;
   let response = await octokit.rest.repos.getReleaseByTag({
     owner: owner,
@@ -40,35 +56,34 @@ async function getReleaseUrlByTag(
       `Could not find tag '${tagName}' in repo '${repo}' by the owner '${owner}'! Response status was ${response.status}...`,
     );
   }
-  return getReleaseDownloadUrl(octokit, owner, repo, response.data.id);
+  return response.data;
 }
 
-async function getLatestReleaseUrl(
+async function getReleaseDownloadUrl(
   octokit: Octokit,
-  owner: string,
-  repo: string,
+  release: any,
 ): Promise<string> {
-  let response = await octokit.rest.repos.getLatestRelease({
-    owner: owner,
-    repo: repo,
-  });
-  if (response.status != 200) {
-    throw new Error(
-      `Could not get the latest release from repo '${repo}' by the owner '${owner}'! Response status was ${response.status}...`,
-    );
-  }
-  return getReleaseDownloadUrl(octokit, owner, repo, response.data.id);
+  return release.assets[0].browser_download_url;
 }
 
-export async function getReleaseUrlByVersion(
-  octokit: Octokit,
+async function getReleaseSha256sum(
+  release: any,
+) : Promise<string> {
+  const matches = release.body.matchAll(/SHA-256: *`*([\da-fA-F]{64})`*/g);
+  const match = matches.next();
+  const sha256 = match.value[1];
+  return sha256;
+}
+
+export async function getReleaseInfo(
   owner: string,
   repo: string,
   version: string,
-) {
-  if (version == "latest") {
-    return getLatestReleaseUrl(octokit, owner, repo);
-  } else {
-    return getReleaseUrlByTag(octokit, owner, repo, version);
-  }
+  auth_token?: string
+) : Promise<[string, string]> {
+  const octokit = getOctokit(auth_token);
+  const release = await getRelease(octokit, owner, repo, version);
+  const url = await getReleaseDownloadUrl(octokit, release);
+  const sha256sum = await getReleaseSha256sum(release);
+  return [url, sha256sum]
 }
