@@ -1,6 +1,5 @@
 import path = require("path");
 import io = require("@actions/io");
-import { Octokit } from "@octokit/rest";
 import * as github_helper from "./github_helper";
 import * as installer from "./installer";
 import * as fs from "fs";
