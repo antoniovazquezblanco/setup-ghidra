@@ -16,16 +16,19 @@ async function downloadWithExtension(url: string): Promise<string> {
 
 async function calculateSha256Hash(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const hash = crypto.createHash('sha256');
+    const hash = crypto.createHash("sha256");
     const stream = fs.createReadStream(filePath);
 
-    stream.on('data', (data) => hash.update(data));
-    stream.on('end', () => resolve(hash.digest('hex')));
-    stream.on('error', (error) => reject(error));
+    stream.on("data", (data) => hash.update(data));
+    stream.on("end", () => resolve(hash.digest("hex")));
+    stream.on("error", (error) => reject(error));
   });
 }
 
-export async function installFromUrl(url: string, sha256sum: string): Promise<string> {
+export async function installFromUrl(
+  url: string,
+  sha256sum: string,
+): Promise<string> {
   // Decide on a tool version based on the url...
   const version = crypto.createHash("sha1").update(url).digest("hex");
 
@@ -40,12 +43,12 @@ export async function installFromUrl(url: string, sha256sum: string): Promise<st
   console.info(`Downloading Ghidra from ${url}`);
   let assetPath = await downloadWithExtension(url);
 
-  if (sha256sum != 'skip') {
+  if (sha256sum != "skip") {
     console.info(`Verifying downloaded file hash...`);
     let fileHash = await calculateSha256Hash(assetPath);
     console.info(`Downloaded file sha256sum is ${fileHash}`);
-    if(fileHash != sha256sum)
-      throw new Error('File validation error! SHA256 sum does not match!');
+    if (fileHash != sha256sum)
+      throw new Error("File validation error! SHA256 sum does not match!");
   }
 
   console.info(`Extracting Ghidra in ${assetPath}...`);

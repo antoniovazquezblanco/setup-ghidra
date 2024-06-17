@@ -35652,7 +35652,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getReleaseUrlByVersion = exports.getOctokit = void 0;
+exports.getReleaseInfo = exports.getOctokit = void 0;
 const rest_1 = __nccwpck_require__(5375);
 const utils_1 = __nccwpck_require__(3030);
 function getOctokit(auth_token) {
@@ -35663,17 +35663,29 @@ function getOctokit(auth_token) {
     return new rest_1.Octokit(options);
 }
 exports.getOctokit = getOctokit;
-function getReleaseDownloadUrl(octokit, owner, repo, release_id) {
+function getRelease(octokit, owner, repo, version) {
     return __awaiter(this, void 0, void 0, function* () {
-        let assets = yield octokit.rest.repos.listReleaseAssets({
-            owner: owner,
-            repo: repo,
-            release_id: release_id,
-        });
-        return assets.data[0].browser_download_url;
+        if (version == "latest") {
+            return getLatestRelease(octokit, owner, repo);
+        }
+        else {
+            return getReleaseByTag(octokit, owner, repo, version);
+        }
     });
 }
-function getReleaseUrlByTag(octokit, owner, repo, tag) {
+function getLatestRelease(octokit, owner, repo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let response = yield octokit.rest.repos.getLatestRelease({
+            owner: owner,
+            repo: repo,
+        });
+        if (response.status != 200) {
+            throw new Error(`Could not get the latest release from repo '${repo}' by the owner '${owner}'! Response status was ${response.status}...`);
+        }
+        return response.data;
+    });
+}
+function getReleaseByTag(octokit, owner, repo, tag) {
     return __awaiter(this, void 0, void 0, function* () {
         let tagName = `Ghidra_${tag}_build`;
         let response = yield octokit.rest.repos.getReleaseByTag({
@@ -35684,32 +35696,32 @@ function getReleaseUrlByTag(octokit, owner, repo, tag) {
         if (response.status != 200) {
             throw new Error(`Could not find tag '${tagName}' in repo '${repo}' by the owner '${owner}'! Response status was ${response.status}...`);
         }
-        return getReleaseDownloadUrl(octokit, owner, repo, response.data.id);
+        return response.data;
     });
 }
-function getLatestReleaseUrl(octokit, owner, repo) {
+function getReleaseDownloadUrl(octokit, release) {
     return __awaiter(this, void 0, void 0, function* () {
-        let response = yield octokit.rest.repos.getLatestRelease({
-            owner: owner,
-            repo: repo,
-        });
-        if (response.status != 200) {
-            throw new Error(`Could not get the latest release from repo '${repo}' by the owner '${owner}'! Response status was ${response.status}...`);
-        }
-        return getReleaseDownloadUrl(octokit, owner, repo, response.data.id);
+        return release.assets[0].browser_download_url;
     });
 }
-function getReleaseUrlByVersion(octokit, owner, repo, version) {
+function getReleaseSha256sum(release) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (version == "latest") {
-            return getLatestReleaseUrl(octokit, owner, repo);
-        }
-        else {
-            return getReleaseUrlByTag(octokit, owner, repo, version);
-        }
+        const matches = release.body.matchAll(/SHA-256: *`*([\da-fA-F]{64})`*/g);
+        const match = matches.next();
+        const sha256 = match.value[1];
+        return sha256;
     });
 }
-exports.getReleaseUrlByVersion = getReleaseUrlByVersion;
+function getReleaseInfo(owner, repo, version, auth_token) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = getOctokit(auth_token);
+        const release = yield getRelease(octokit, owner, repo, version);
+        const url = yield getReleaseDownloadUrl(octokit, release);
+        const sha256sum = yield getReleaseSha256sum(release);
+        return [url, sha256sum];
+    });
+}
+exports.getReleaseInfo = getReleaseInfo;
 
 
 /***/ }),
@@ -35761,34 +35773,52 @@ const crypto = __importStar(__nccwpck_require__(6113));
 function downloadWithExtension(url) {
     return __awaiter(this, void 0, void 0, function* () {
         const extension = path.extname(url);
-        let asset_path = yield tc.downloadTool(url);
-        if (path.extname(asset_path) !== extension) {
-            fs.renameSync(asset_path, asset_path + extension);
-            return asset_path + extension;
+        let assetPath = yield tc.downloadTool(url);
+        if (path.extname(assetPath) !== extension) {
+            fs.renameSync(assetPath, assetPath + extension);
+            return assetPath + extension;
         }
-        return asset_path;
+        return assetPath;
     });
 }
-function installFromUrl(url) {
+function calculateSha256Hash(filePath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, reject) => {
+            const hash = crypto.createHash("sha256");
+            const stream = fs.createReadStream(filePath);
+            stream.on("data", (data) => hash.update(data));
+            stream.on("end", () => resolve(hash.digest("hex")));
+            stream.on("error", (error) => reject(error));
+        });
+    });
+}
+function installFromUrl(url, sha256sum) {
     return __awaiter(this, void 0, void 0, function* () {
         // Decide on a tool version based on the url...
         const version = crypto.createHash("sha1").update(url).digest("hex");
         // Check if the tool is in the cache...
-        let ghidra_path = tc.find("ghidra", version);
-        if (ghidra_path) {
-            core.info(`Tool found in cache at '${ghidra_path}'...`);
-            return ghidra_path;
+        let ghidraPath = tc.find("ghidra", version);
+        if (ghidraPath) {
+            core.info(`Tool found in cache at '${ghidraPath}'...`);
+            return ghidraPath;
         }
         // Tool is not in cache, install it...
         console.info(`Downloading Ghidra from ${url}`);
-        let asset_path = yield downloadWithExtension(url);
-        console.info(`Extracting Ghidra in ${asset_path}...`);
-        ghidra_path = yield tc.extractZip(asset_path, undefined);
+        let assetPath = yield downloadWithExtension(url);
+        if (sha256sum != "skip") {
+            console.info(`Verifying downloaded file hash...`);
+            let fileHash = yield calculateSha256Hash(assetPath);
+            console.info(`Downloaded file sha256sum is ${fileHash}`);
+            if (fileHash != sha256sum)
+                throw new Error("File validation error! SHA256 sum does not match!");
+        }
+        console.info(`Extracting Ghidra in ${assetPath}...`);
+        ghidraPath = yield tc.extractZip(assetPath, undefined);
         console.info(`Locating real Ghidra folder...`);
-        ghidra_path = path.join(ghidra_path, fs.readdirSync(ghidra_path)[0]);
+        ghidraPath = path.join(ghidraPath, fs.readdirSync(ghidraPath)[0]);
         // Let the cache know...
-        console.info(`Caching Ghidra in ${ghidra_path}...`);
-        return tc.cacheDir(ghidra_path, "ghidra", version);
+        console.info(`Caching Ghidra in ${ghidraPath}...`);
+        return yield tc.cacheDir(ghidraPath, "ghidra", version);
     });
 }
 exports.installFromUrl = installFromUrl;
@@ -35837,28 +35867,55 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const github_helper = __importStar(__nccwpck_require__(6932));
 const installer = __importStar(__nccwpck_require__(2574));
+const regexVersion = new RegExp("^d+(.d+)*(.d+)*$");
+const regexSha256sum = new RegExp("^[da-fA-F]{64}$");
+function paramCheck(paramVersion, paramSha256sum, paramDownloadUrl) {
+    // Validate version parameter
+    if (!paramDownloadUrl &&
+        paramVersion != "latest" &&
+        !regexVersion.test(paramVersion))
+        throw new Error('Version parameter is not "latest" nor a valid semver format.');
+    // Validate sha256sum parameter
+    if (paramDownloadUrl &&
+        (paramSha256sum != "skip" || !regexSha256sum.test(paramSha256sum)))
+        throw new Error('Parameter sha256sum must be either "skip" or a valid hexadecimal sha256sum when using the download_url parameter.');
+    if (!paramDownloadUrl &&
+        paramSha256sum != "skip" &&
+        paramSha256sum != "online" &&
+        !regexSha256sum.test(paramSha256sum))
+        throw new Error('Parameter sha256sum must be either "skip", "online" or a valid hexadecimal sha256sum.');
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // Collect action parameters
-            let download_url = core.getInput("download_url");
-            let owner = core.getInput("owner");
-            let repo = core.getInput("repo");
-            let version = core.getInput("version");
-            let auth_token = core.getInput("auth_token");
+            let paramDownloadUrl = core.getInput("download_url");
+            let paramOwner = core.getInput("owner");
+            let paramRepo = core.getInput("repo");
+            let paramVersion = core.getInput("version");
+            let paramSha256sum = core.getInput("sha256sum");
+            let paramAuthToken = core.getInput("auth_token");
+            // Check parameters
+            paramCheck(paramVersion, paramSha256sum, paramDownloadUrl);
             // First obtain a valid download url..
-            if (!download_url) {
+            let sha256sum = null;
+            if (!paramDownloadUrl) {
                 core.debug("Using owner, repo and version inputs to locate a release...");
-                const octokit = github_helper.getOctokit(auth_token);
-                download_url = yield github_helper.getReleaseUrlByVersion(octokit, owner, repo, version);
+                [paramDownloadUrl, sha256sum] = yield github_helper.getReleaseInfo(paramOwner, paramRepo, paramVersion, paramAuthToken);
             }
             else {
                 core.debug("The download_url input was provided; ignoring owner, repo and version inputs...");
             }
+            // Handle release validation
+            if (paramSha256sum == "online") {
+                if (!sha256sum || !regexSha256sum.test(sha256sum))
+                    throw new Error("Could not obtain an SHA256 sum online!");
+                paramSha256sum = sha256sum;
+            }
             // Install Ghidra
-            let ghidra_path = yield installer.installFromUrl(download_url);
+            let ghidraPath = yield installer.installFromUrl(paramDownloadUrl, paramSha256sum);
             // Set environmental variable
-            core.exportVariable("GHIDRA_INSTALL_DIR", ghidra_path);
+            core.exportVariable("GHIDRA_INSTALL_DIR", ghidraPath);
         }
         catch (err) {
             core.setFailed(err.message);

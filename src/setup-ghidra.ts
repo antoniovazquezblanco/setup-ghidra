@@ -2,23 +2,41 @@ import * as core from "@actions/core";
 import * as github_helper from "./github_helper";
 import * as installer from "./installer";
 
-const regexVersion = new RegExp('^\d+(\.\d+)*(\.\d+)*$');
-const regexSha256sum = new RegExp('^[\da-fA-F]{64}$');
+const regexVersion = new RegExp("^d+(.d+)*(.d+)*$");
+const regexSha256sum = new RegExp("^[da-fA-F]{64}$");
 
 function paramCheck(
   paramVersion: string,
   paramSha256sum: string,
-  paramDownloadUrl?: string
+  paramDownloadUrl?: string,
 ): void {
   // Validate version parameter
-  if (!paramDownloadUrl && paramVersion != 'latest' && !regexVersion.test(paramVersion))
-    throw new Error('Version parameter is not "latest" nor a valid semver format.');
+  if (
+    !paramDownloadUrl &&
+    paramVersion != "latest" &&
+    !regexVersion.test(paramVersion)
+  )
+    throw new Error(
+      'Version parameter is not "latest" nor a valid semver format.',
+    );
 
   // Validate sha256sum parameter
-  if (paramDownloadUrl && (paramSha256sum != 'skip' || !regexSha256sum.test(paramSha256sum)))
-    throw new Error('Parameter sha256sum must be either "skip" or a valid hexadecimal sha256sum when using the download_url parameter.');
-  if (!paramDownloadUrl && (paramSha256sum != 'skip' && paramSha256sum != 'online' && !regexSha256sum.test(paramSha256sum)))
-    throw new Error('Parameter sha256sum must be either "skip", "online" or a valid hexadecimal sha256sum.');
+  if (
+    paramDownloadUrl &&
+    (paramSha256sum != "skip" || !regexSha256sum.test(paramSha256sum))
+  )
+    throw new Error(
+      'Parameter sha256sum must be either "skip" or a valid hexadecimal sha256sum when using the download_url parameter.',
+    );
+  if (
+    !paramDownloadUrl &&
+    paramSha256sum != "skip" &&
+    paramSha256sum != "online" &&
+    !regexSha256sum.test(paramSha256sum)
+  )
+    throw new Error(
+      'Parameter sha256sum must be either "skip", "online" or a valid hexadecimal sha256sum.',
+    );
 }
 
 async function run() {
@@ -38,7 +56,12 @@ async function run() {
     let sha256sum = null;
     if (!paramDownloadUrl) {
       core.debug("Using owner, repo and version inputs to locate a release...");
-      [paramDownloadUrl, sha256sum] = await github_helper.getReleaseInfo(paramOwner, paramRepo, paramVersion, paramAuthToken);
+      [paramDownloadUrl, sha256sum] = await github_helper.getReleaseInfo(
+        paramOwner,
+        paramRepo,
+        paramVersion,
+        paramAuthToken,
+      );
     } else {
       core.debug(
         "The download_url input was provided; ignoring owner, repo and version inputs...",
@@ -46,14 +69,17 @@ async function run() {
     }
 
     // Handle release validation
-    if(paramSha256sum == 'online') {
-      if(!sha256sum || !regexSha256sum.test(sha256sum))
-        throw new Error('Could not obtain an SHA256 sum online!')
+    if (paramSha256sum == "online") {
+      if (!sha256sum || !regexSha256sum.test(sha256sum))
+        throw new Error("Could not obtain an SHA256 sum online!");
       paramSha256sum = sha256sum;
     }
 
     // Install Ghidra
-    let ghidraPath = await installer.installFromUrl(paramDownloadUrl, paramSha256sum);
+    let ghidraPath = await installer.installFromUrl(
+      paramDownloadUrl,
+      paramSha256sum,
+    );
 
     // Set environmental variable
     core.exportVariable("GHIDRA_INSTALL_DIR", ghidraPath);

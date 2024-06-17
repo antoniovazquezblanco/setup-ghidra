@@ -13,8 +13,8 @@ async function getRelease(
   octokit: Octokit,
   owner: string,
   repo: string,
-  version: string
-) : Promise <any> {
+  version: string,
+): Promise<any> {
   if (version == "latest") {
     return getLatestRelease(octokit, owner, repo);
   } else {
@@ -66,9 +66,7 @@ async function getReleaseDownloadUrl(
   return release.assets[0].browser_download_url;
 }
 
-async function getReleaseSha256sum(
-  release: any,
-) : Promise<string> {
+async function getReleaseSha256sum(release: any): Promise<string> {
   const matches = release.body.matchAll(/SHA-256: *`*([\da-fA-F]{64})`*/g);
   const match = matches.next();
   const sha256 = match.value[1];
@@ -79,11 +77,11 @@ export async function getReleaseInfo(
   owner: string,
   repo: string,
   version: string,
-  auth_token?: string
-) : Promise<[string, string]> {
+  auth_token?: string,
+): Promise<[string, string]> {
   const octokit = getOctokit(auth_token);
   const release = await getRelease(octokit, owner, repo, version);
   const url = await getReleaseDownloadUrl(octokit, release);
   const sha256sum = await getReleaseSha256sum(release);
-  return [url, sha256sum]
+  return [url, sha256sum];
 }
