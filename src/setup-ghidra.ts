@@ -3,7 +3,7 @@ import * as github_helper from "./github_helper";
 import * as installer from "./installer";
 
 const regexVersion = new RegExp("^\\d+(\\.\\d+)*(\\.\\d+)*$");
-const regexSha256sum = new RegExp("^[da-fA-F]{64}$");
+const regexSha256sum = new RegExp("^[\\da-fA-F]{64}$");
 
 function paramCheck(
   paramVersion: string,

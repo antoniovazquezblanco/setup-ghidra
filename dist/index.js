@@ -35868,7 +35868,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github_helper = __importStar(__nccwpck_require__(6932));
 const installer = __importStar(__nccwpck_require__(2574));
 const regexVersion = new RegExp("^\\d+(\\.\\d+)*(\\.\\d+)*$");
-const regexSha256sum = new RegExp("^[da-fA-F]{64}$");
+const regexSha256sum = new RegExp("^[\\da-fA-F]{64}$");
 function paramCheck(paramVersion, paramSha256sum, paramDownloadUrl) {
     // Validate version parameter
     if (!paramDownloadUrl &&
