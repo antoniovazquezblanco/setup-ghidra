@@ -1,6 +1,6 @@
 {
   "name": "setup-ghidra",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "This action sets up a Ghidra environment for use in actions.",
   "author": "Antonio Vázquez Blanco",
   "license": "MIT",
