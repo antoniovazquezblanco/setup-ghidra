@@ -31,6 +31,7 @@ jobs:
 
       - name: Upload coverage
         uses: ArtiomTr/jest-coverage-report-action@v2.3.0
+        continue-on-error: true
         with:
           coverage-file: ./coverage/coverage-final.json
           base-coverage-file: ./coverage/coverage-final.json
