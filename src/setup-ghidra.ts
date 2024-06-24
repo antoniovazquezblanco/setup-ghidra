@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
-import * as github_helper from "./github_helper";
-import * as installer from "./installer";
+import * as github_helper from "./github_helper.js";
+import * as installer from "./installer.js";
 
 const regexVersion = new RegExp("^\\d+(\\.\\d+)*(\\.\\d+)*$");
 const regexSha256sum = new RegExp("^[\\da-fA-F]{64}$");

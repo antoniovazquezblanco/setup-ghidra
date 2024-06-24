@@ -1,4 +1,4 @@
-import * as github_helper from "./github_helper";
+import * as github_helper from "./github_helper.js";
 
 test("Oktokit getter, no token", () => {
   const octokit = github_helper.getOctokit();

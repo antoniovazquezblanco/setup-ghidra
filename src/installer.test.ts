@@ -1,7 +1,7 @@
 import path = require("path");
 import io = require("@actions/io");
-import * as github_helper from "./github_helper";
-import * as installer from "./installer";
+import * as github_helper from "./github_helper.js";
+import * as installer from "./installer.js";
 import * as fs from "fs";
 
 describe("Installer tests", () => {
