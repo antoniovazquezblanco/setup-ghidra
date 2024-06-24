@@ -6,11 +6,11 @@
 import type { Config } from "jest";
 
 const config: Config = {
-  preset: 'ts-jest',
+  preset: "ts-jest",
   verbose: true,
   collectCoverage: true,
-  coverageDirectory: 'coverage',
-  coverageProvider: 'v8'
+  coverageDirectory: "coverage",
+  coverageProvider: "v8",
 };
 
 export default config;
