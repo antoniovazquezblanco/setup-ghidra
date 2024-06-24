@@ -35638,19 +35638,10 @@ function wrappy (fn, cb) {
 /***/ }),
 
 /***/ 6932:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getOctokit = getOctokit;
 exports.getReleaseInfo = getReleaseInfo;
@@ -35663,63 +35654,51 @@ function getOctokit(auth_token) {
     }
     return new rest_1.Octokit(options);
 }
-function getRelease(octokit, owner, repo, version) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (version == "latest") {
-            return getLatestRelease(octokit, owner, repo);
-        }
-        else {
-            return getReleaseByTag(octokit, owner, repo, version);
-        }
-    });
+async function getRelease(octokit, owner, repo, version) {
+    if (version == "latest") {
+        return getLatestRelease(octokit, owner, repo);
+    }
+    else {
+        return getReleaseByTag(octokit, owner, repo, version);
+    }
 }
-function getLatestRelease(octokit, owner, repo) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let response = yield octokit.rest.repos.getLatestRelease({
-            owner: owner,
-            repo: repo,
-        });
-        if (response.status != 200) {
-            throw new Error(`Could not get the latest release from repo '${repo}' by the owner '${owner}'! Response status was ${response.status}...`);
-        }
-        return response.data;
+async function getLatestRelease(octokit, owner, repo) {
+    let response = await octokit.rest.repos.getLatestRelease({
+        owner: owner,
+        repo: repo,
     });
+    if (response.status != 200) {
+        throw new Error(`Could not get the latest release from repo '${repo}' by the owner '${owner}'! Response status was ${response.status}...`);
+    }
+    return response.data;
 }
-function getReleaseByTag(octokit, owner, repo, tag) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let tagName = `Ghidra_${tag}_build`;
-        let response = yield octokit.rest.repos.getReleaseByTag({
-            owner: owner,
-            repo: repo,
-            tag: tagName,
-        });
-        if (response.status != 200) {
-            throw new Error(`Could not find tag '${tagName}' in repo '${repo}' by the owner '${owner}'! Response status was ${response.status}...`);
-        }
-        return response.data;
+async function getReleaseByTag(octokit, owner, repo, tag) {
+    let tagName = `Ghidra_${tag}_build`;
+    let response = await octokit.rest.repos.getReleaseByTag({
+        owner: owner,
+        repo: repo,
+        tag: tagName,
     });
+    if (response.status != 200) {
+        throw new Error(`Could not find tag '${tagName}' in repo '${repo}' by the owner '${owner}'! Response status was ${response.status}...`);
+    }
+    return response.data;
 }
-function getReleaseDownloadUrl(octokit, release) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return release.assets[0].browser_download_url;
-    });
+async function getReleaseDownloadUrl(octokit, release) {
+    return release.assets[0].browser_download_url;
 }
-function getReleaseSha256sum(release) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const matches = release.body.matchAll(/SHA-256: *`*([\da-fA-F]{64})`*/g);
-        const match = matches.next();
-        const sha256 = match.value[1];
-        return sha256;
-    });
+async function getReleaseSha256sum(release) {
+    const matches = release.body.matchAll(/SHA-256: *`*([\da-fA-F]{64})`*/g);
+    const match = matches.next();
+    const sha256 = match.value[1];
+    return sha256;
 }
-function getReleaseInfo(owner, repo, version, auth_token) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const octokit = getOctokit(auth_token);
-        const release = yield getRelease(octokit, owner, repo, version);
-        const url = yield getReleaseDownloadUrl(octokit, release);
-        const sha256sum = yield getReleaseSha256sum(release);
-        return [url, sha256sum];
-    });
+async function getReleaseInfo(owner, repo, version, auth_token) {
+    const octokit = getOctokit(auth_token);
+    const release = await getRelease(octokit, owner, repo, version);
+    const url = await getReleaseDownloadUrl(octokit, release);
+    const sha256sum = await getReleaseSha256sum(release);
+    return [url, sha256sum];
 }
 
 
@@ -35753,15 +35732,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.installFromUrl = installFromUrl;
 const tc = __importStar(__nccwpck_require__(7784));
@@ -35769,56 +35739,50 @@ const core = __importStar(__nccwpck_require__(2186));
 const path = __importStar(__nccwpck_require__(1017));
 const fs = __importStar(__nccwpck_require__(7147));
 const crypto = __importStar(__nccwpck_require__(6113));
-function downloadWithExtension(url) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const extension = path.extname(url);
-        let assetPath = yield tc.downloadTool(url);
-        if (path.extname(assetPath) !== extension) {
-            fs.renameSync(assetPath, assetPath + extension);
-            return assetPath + extension;
-        }
-        return assetPath;
+async function downloadWithExtension(url) {
+    const extension = path.extname(url);
+    let assetPath = await tc.downloadTool(url);
+    if (path.extname(assetPath) !== extension) {
+        fs.renameSync(assetPath, assetPath + extension);
+        return assetPath + extension;
+    }
+    return assetPath;
+}
+async function calculateSha256Hash(filePath) {
+    return new Promise((resolve, reject) => {
+        const hash = crypto.createHash("sha256");
+        const stream = fs.createReadStream(filePath);
+        stream.on("data", (data) => hash.update(data));
+        stream.on("end", () => resolve(hash.digest("hex")));
+        stream.on("error", (error) => reject(error));
     });
 }
-function calculateSha256Hash(filePath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            const hash = crypto.createHash("sha256");
-            const stream = fs.createReadStream(filePath);
-            stream.on("data", (data) => hash.update(data));
-            stream.on("end", () => resolve(hash.digest("hex")));
-            stream.on("error", (error) => reject(error));
-        });
-    });
-}
-function installFromUrl(url, sha256sum) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Decide on a tool version based on the url...
-        const version = crypto.createHash("sha1").update(url).digest("hex");
-        // Check if the tool is in the cache...
-        let ghidraPath = tc.find("ghidra", version);
-        if (ghidraPath) {
-            core.info(`Tool found in cache at '${ghidraPath}'...`);
-            return ghidraPath;
-        }
-        // Tool is not in cache, install it...
-        console.info(`Downloading Ghidra from ${url}`);
-        let assetPath = yield downloadWithExtension(url);
-        if (sha256sum != "skip") {
-            console.info(`Verifying downloaded file hash...`);
-            let fileHash = yield calculateSha256Hash(assetPath);
-            console.info(`Downloaded file sha256sum is ${fileHash}`);
-            if (fileHash != sha256sum)
-                throw new Error("File validation error! SHA256 sum does not match!");
-        }
-        console.info(`Extracting Ghidra in ${assetPath}...`);
-        ghidraPath = yield tc.extractZip(assetPath, undefined);
-        console.info(`Locating real Ghidra folder...`);
-        ghidraPath = path.join(ghidraPath, fs.readdirSync(ghidraPath)[0]);
-        // Let the cache know...
-        console.info(`Caching Ghidra in ${ghidraPath}...`);
-        return yield tc.cacheDir(ghidraPath, "ghidra", version);
-    });
+async function installFromUrl(url, sha256sum) {
+    // Decide on a tool version based on the url...
+    const version = crypto.createHash("sha1").update(url).digest("hex");
+    // Check if the tool is in the cache...
+    let ghidraPath = tc.find("ghidra", version);
+    if (ghidraPath) {
+        core.info(`Tool found in cache at '${ghidraPath}'...`);
+        return ghidraPath;
+    }
+    // Tool is not in cache, install it...
+    console.info(`Downloading Ghidra from ${url}`);
+    let assetPath = await downloadWithExtension(url);
+    if (sha256sum != "skip") {
+        console.info(`Verifying downloaded file hash...`);
+        let fileHash = await calculateSha256Hash(assetPath);
+        console.info(`Downloaded file sha256sum is ${fileHash}`);
+        if (fileHash != sha256sum)
+            throw new Error("File validation error! SHA256 sum does not match!");
+    }
+    console.info(`Extracting Ghidra in ${assetPath}...`);
+    ghidraPath = await tc.extractZip(assetPath, undefined);
+    console.info(`Locating real Ghidra folder...`);
+    ghidraPath = path.join(ghidraPath, fs.readdirSync(ghidraPath)[0]);
+    // Let the cache know...
+    console.info(`Caching Ghidra in ${ghidraPath}...`);
+    return await tc.cacheDir(ghidraPath, "ghidra", version);
 }
 
 
@@ -35852,15 +35816,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const github_helper = __importStar(__nccwpck_require__(6932));
@@ -35883,42 +35838,40 @@ function paramCheck(paramVersion, paramSha256sum, paramDownloadUrl) {
         !regexSha256sum.test(paramSha256sum))
         throw new Error('Parameter sha256sum must be either "skip", "online" or a valid hexadecimal sha256sum.');
 }
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            // Collect action parameters
-            let paramDownloadUrl = core.getInput("download_url");
-            let paramOwner = core.getInput("owner");
-            let paramRepo = core.getInput("repo");
-            let paramVersion = core.getInput("version");
-            let paramSha256sum = core.getInput("sha256sum");
-            let paramAuthToken = core.getInput("auth_token");
-            // Check parameters
-            paramCheck(paramVersion, paramSha256sum, paramDownloadUrl);
-            // First obtain a valid download url..
-            let sha256sum = null;
-            if (!paramDownloadUrl) {
-                core.debug("Using owner, repo and version inputs to locate a release...");
-                [paramDownloadUrl, sha256sum] = yield github_helper.getReleaseInfo(paramOwner, paramRepo, paramVersion, paramAuthToken);
-            }
-            else {
-                core.debug("The download_url input was provided; ignoring owner, repo and version inputs...");
-            }
-            // Handle release validation
-            if (paramSha256sum == "online") {
-                if (!sha256sum || !regexSha256sum.test(sha256sum))
-                    throw new Error("Could not obtain an SHA256 sum online!");
-                paramSha256sum = sha256sum;
-            }
-            // Install Ghidra
-            let ghidraPath = yield installer.installFromUrl(paramDownloadUrl, paramSha256sum);
-            // Set environmental variable
-            core.exportVariable("GHIDRA_INSTALL_DIR", ghidraPath);
+async function run() {
+    try {
+        // Collect action parameters
+        let paramDownloadUrl = core.getInput("download_url");
+        let paramOwner = core.getInput("owner");
+        let paramRepo = core.getInput("repo");
+        let paramVersion = core.getInput("version");
+        let paramSha256sum = core.getInput("sha256sum");
+        let paramAuthToken = core.getInput("auth_token");
+        // Check parameters
+        paramCheck(paramVersion, paramSha256sum, paramDownloadUrl);
+        // First obtain a valid download url..
+        let sha256sum = null;
+        if (!paramDownloadUrl) {
+            core.debug("Using owner, repo and version inputs to locate a release...");
+            [paramDownloadUrl, sha256sum] = await github_helper.getReleaseInfo(paramOwner, paramRepo, paramVersion, paramAuthToken);
         }
-        catch (err) {
-            core.setFailed(err.message);
+        else {
+            core.debug("The download_url input was provided; ignoring owner, repo and version inputs...");
         }
-    });
+        // Handle release validation
+        if (paramSha256sum == "online") {
+            if (!sha256sum || !regexSha256sum.test(sha256sum))
+                throw new Error("Could not obtain an SHA256 sum online!");
+            paramSha256sum = sha256sum;
+        }
+        // Install Ghidra
+        let ghidraPath = await installer.installFromUrl(paramDownloadUrl, paramSha256sum);
+        // Set environmental variable
+        core.exportVariable("GHIDRA_INSTALL_DIR", ghidraPath);
+    }
+    catch (err) {
+        core.setFailed(err.message);
+    }
 }
 run();
 
