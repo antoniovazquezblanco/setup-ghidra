@@ -2,6 +2,22 @@
   "name": "setup-ghidra",
   "version": "2.0.3",
   "description": "This action sets up a Ghidra environment for use in actions.",
+  "author": "Antonio Vázquez Blanco",
+  "license": "MIT",
+  "homepage": "https://github.com/marketplace/actions/setup-ghidra-action",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antoniovazquezblanco/setup-ghidra.git"
+  },
+  "bugs": {
+    "url": "https://github.com/antoniovazquezblanco/setup-ghidra/issues"
+  },
+  "keywords": [
+    "actions",
+    "node",
+    "setup",
+    "ghidra"
+  ],
   "main": "index.js",
   "scripts": {
     "build": "ncc build src/setup-ghidra.ts",
@@ -9,9 +25,6 @@
     "format-check": "prettier --check **/*.ts",
     "test": "jest"
   },
-  "keywords": [],
-  "author": "Antonio Vázquez Blanco",
-  "license": "MIT",
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@vercel/ncc": "^0.38.1",
