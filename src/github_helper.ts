@@ -59,10 +59,7 @@ async function getReleaseByTag(
   return response.data;
 }
 
-async function getReleaseDownloadUrl(
-  octokit: Octokit,
-  release: any,
-): Promise<string> {
+async function getReleaseDownloadUrl(release: any): Promise<string> {
   return release.assets[0].browser_download_url;
 }
 
@@ -81,7 +78,7 @@ export async function getReleaseInfo(
 ): Promise<[string, string]> {
   const octokit = getOctokit(auth_token);
   const release = await getRelease(octokit, owner, repo, version);
-  const url = await getReleaseDownloadUrl(octokit, release);
+  const url = await getReleaseDownloadUrl(release);
   const sha256sum = await getReleaseSha256sum(release);
   return [url, sha256sum];
 }

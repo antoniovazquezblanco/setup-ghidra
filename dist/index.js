@@ -35684,7 +35684,7 @@ async function getReleaseByTag(octokit, owner, repo, tag) {
     }
     return response.data;
 }
-async function getReleaseDownloadUrl(octokit, release) {
+async function getReleaseDownloadUrl(release) {
     return release.assets[0].browser_download_url;
 }
 async function getReleaseSha256sum(release) {
@@ -35696,7 +35696,7 @@ async function getReleaseSha256sum(release) {
 async function getReleaseInfo(owner, repo, version, auth_token) {
     const octokit = getOctokit(auth_token);
     const release = await getRelease(octokit, owner, repo, version);
-    const url = await getReleaseDownloadUrl(octokit, release);
+    const url = await getReleaseDownloadUrl(release);
     const sha256sum = await getReleaseSha256sum(release);
     return [url, sha256sum];
 }
