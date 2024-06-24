@@ -32,10 +32,6 @@ jobs:
       - name: Upload coverage
         uses: ArtiomTr/jest-coverage-report-action@v2.3.0
         continue-on-error: true
-        with:
-          coverage-file: ./coverage/coverage-final.json
-          base-coverage-file: ./coverage/coverage-final.json
-          skip-step: all
 
       - name: Check build status
         run: git diff --exit-code --quiet && echo "No changes were found :)" || { git --no-pager diff; echo -e "Changes found after build.\nPlease run \"npm run build\" and commit the changes in the dist directory."; exit 1; }
