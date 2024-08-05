@@ -17,7 +17,7 @@ jobs:
         uses: dependabot/fetch-metadata@v1
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'npm' }}
         with:
           ref: ${{ github.event.pull_request.head.sha }}
