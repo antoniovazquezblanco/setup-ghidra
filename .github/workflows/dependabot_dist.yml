@@ -18,26 +18,26 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
-        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'npm' }}
+        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'npm_and_yarn' }}
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Node.js
-        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'npm' }}
+        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'npm_and_yarn' }}
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
 
       - name: Install dependencies
-        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'npm' }}
+        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'npm_and_yarn' }}
         run: npm install
 
       - name: Build
-        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'npm' }}
+        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'npm_and_yarn' }}
         run: npm run build
 
       - name: Pull request update
-        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'npm' }}
+        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'npm_and_yarn' }}
         uses: EndBug/add-and-commit@v9.1.4
         with:
           add: "dist/"
