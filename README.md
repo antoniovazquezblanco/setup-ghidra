@@ -20,7 +20,7 @@ This example just clones your code, setups java and setups Ghidra from the ofici
 steps:
 - uses: actions/checkout@v4
 - uses: actions/setup-java@v4
-- uses: antoniovazquezblanco/setup-ghidra@v2
+- uses: antoniovazquezblanco/setup-ghidra@v2.0.12
 ```
 
 **Advanced:**
@@ -31,15 +31,15 @@ This example tries to build a module project using different Ghidra versions.
 strategy:
   matrix:
     ghidra:
-      - "11.1.1"
-      - "11.0.3"
-      - "10.4"
+      - "11.3.2"
+      - "11.2.1"
+      - "11.1.2"
 
 steps:
 - uses: actions/checkout@v4
 - uses: actions/setup-java@v4
 - uses: gradle/actions/setup-gradle@v3
-- uses: antoniovazquezblanco/setup-ghidra@v2
+- uses: antoniovazquezblanco/setup-ghidra@v2.0.12
   with:
     auth_token: ${{ secrets.GITHUB_TOKEN }}
     version: ${{ matrix.ghidra }}
@@ -52,7 +52,7 @@ steps:
 For a full reference of action parameters see [action.yml](action.yml)
 
 ```yaml
-- uses: antoniovazquezblanco/setup-ghidra@v2
+- uses: antoniovazquezblanco/setup-ghidra@v2.0.12
   with:
     # A distribution download URL to directly download and install it.
     # If this argument is specified, both the repository and version arguments
