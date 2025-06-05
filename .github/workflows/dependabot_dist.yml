@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
         if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'npm' }}
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Node.js
         if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'npm' }}
@@ -38,10 +38,7 @@ jobs:
 
       - name: Pull request update
         if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'npm' }}
-        run: |
-          git config --global user.name 'some user'
-          git config --global user.email 'some-user@example.com'
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
-          git add dist/
-          git commit -m "Update distribution file"
-          git push -u origin HEAD:${{ github.event.pull_request.head.ref }}
+        uses: EndBug/add-and-commit@v9.1.4
+        with:
+          add: "dist/"
+          message: "Update distribution files"
