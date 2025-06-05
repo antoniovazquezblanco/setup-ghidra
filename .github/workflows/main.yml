@@ -4,6 +4,8 @@ on: [push, pull_request]
 jobs:
   run:
     name: Run
+    permissions:
+      contents: read
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -28,12 +30,6 @@ jobs:
 
       - name: Test
         run: npm test
-
-      - name: Upload coverage
-        uses: ArtiomTr/jest-coverage-report-action@v2.3.1
-        continue-on-error: true
-        with:
-          test-script: npm test
 
       - name: Check build status
         run: git diff --exit-code --quiet && echo "No changes were found :)" || { git --no-pager diff; echo -e "Changes found after build.\nPlease run \"npm run build\" and commit the changes in the dist directory."; exit 1; }
