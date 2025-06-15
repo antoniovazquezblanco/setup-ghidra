@@ -1,7 +1,7 @@
 # Setup Ghidra Action
 
 [![CI](https://github.com/antoniovazquezblanco/setup-ghidra/actions/workflows/main.yml/badge.svg)](https://github.com/antoniovazquezblanco/setup-ghidra/actions/workflows/main.yml)
-[![CodeQL](https://github.com/antoniovazquezblanco/setup-ghidra/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/antoniovazquezblanco/setup-ghidra/actions/workflows/github-code-scanning/codeql)
+[![CodeQL](https://github.com/antoniovazquezblanco/setup-ghidra/actions/workflows/codeql.yml/badge.svg)](https://github.com/antoniovazquezblanco/setup-ghidra/actions/workflows/codeql.yml)
 
 This action sets up a Ghidra environment for use in actions.
 Specific Ghidra versions can be selected and even releases from custom forks can be used.
