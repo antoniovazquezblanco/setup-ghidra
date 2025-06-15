@@ -1,41 +1,104 @@
 name: Main workflow
 on: [push, pull_request]
 
+env:
+  NODE_VERSION: "20.x"
+
 jobs:
-  run:
-    name: Run
+  lint:
+    name: Lint
     permissions:
-      contents: read
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+      contents: write
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install
+      - name: Install node dependencies
         run: npm install
 
       - name: Lint
-        run: npm run format-check
+        run: npm run format
+
+      - name: Commit format changes
+        uses: EndBug/add-and-commit@v9.1.4
+        with:
+          add: "src/"
+          message: "Format source code"
+
+  build:
+    name: Build
+    needs: lint
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install node dependencies
+        run: npm install
 
       - name: Build
         run: npm run build
 
+      - name: Commit distribution changes
+        uses: EndBug/add-and-commit@v9.1.4
+        with:
+          add: "dist/"
+          message: "Update distribution files"
+
+  test:
+    name: Test
+    needs: build
+    permissions:
+      contents: write
+      checks: write
+      pull-requests: write
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install
+        run: npm install
+
       - name: Test
         run: npm test
 
-      - name: Check build status
-        run: git diff --exit-code --quiet && echo "No changes were found :)" || { git --no-pager diff; echo -e "Changes found after build.\nPlease run \"npm run build\" and commit the changes in the dist directory."; exit 1; }
+      - name: Upload coverage
+        uses: ArtiomTr/jest-coverage-report-action@v2.3.1
+        continue-on-error: true
+        with:
+          test-script: npm test
 
   release:
-    needs: run
+    name: Release
+    needs: test
     permissions:
       contents: write
     runs-on: ubuntu-latest
