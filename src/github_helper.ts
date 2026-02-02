@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/rest";
-import { getOctokitOptions } from "@actions/github/lib/utils.js";
+import { getOctokitOptions } from "@actions/github/lib/utils";
 
 export function getOctokit(auth_token?: string) {
   let options = {};
