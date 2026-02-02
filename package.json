@@ -35,7 +35,7 @@
     "ts-node": "^10.9.2"
   },
   "dependencies": {
-    "@actions/core": "^2.0.2",
+    "@actions/core": "^3.0.0",
     "@actions/github": "^7.0.0",
     "@actions/tool-cache": "^3.0.0",
     "@octokit/rest": "^22.0.1"
