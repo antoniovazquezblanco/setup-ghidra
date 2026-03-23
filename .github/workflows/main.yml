@@ -28,7 +28,7 @@ jobs:
         run: npm run format
 
       - name: Commit format changes
-        uses: EndBug/add-and-commit@v9.1.4
+        uses: EndBug/add-and-commit@v10.0.0
         with:
           add: "src/"
           message: "Format source code"
@@ -57,7 +57,7 @@ jobs:
         run: npm run build
 
       - name: Commit distribution changes
-        uses: EndBug/add-and-commit@v9.1.4
+        uses: EndBug/add-and-commit@v10.0.0
         with:
           add: "dist/"
           message: "Update distribution files"
