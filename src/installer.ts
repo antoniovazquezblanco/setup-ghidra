@@ -3,10 +3,17 @@ import * as core from "@actions/core";
 import * as path from "path";
 import * as fs from "fs";
 import * as crypto from "crypto";
+import { retryWithBackoff } from "./retry.js";
 
 async function downloadWithExtension(url: string): Promise<string> {
   const extension = path.extname(url);
-  let assetPath = await tc.downloadTool(url);
+  let assetPath = await retryWithBackoff(
+    () => tc.downloadTool(url),
+    (error: any) => {
+      const status = error?.statusCode ?? error?.status;
+      return typeof status === "number" && status >= 500;
+    },
+  );
   if (path.extname(assetPath) !== extension) {
     fs.renameSync(assetPath, assetPath + extension);
     return assetPath + extension;

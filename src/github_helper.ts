@@ -1,5 +1,6 @@
 import { Octokit } from "@octokit/rest";
 import { getOctokitOptions } from "@actions/github/lib/utils";
+import { retryWithBackoff } from "./retry.js";
 
 export function getOctokit(auth_token?: string) {
   let options = {};
@@ -70,6 +71,12 @@ async function getReleaseSha256sum(release: any): Promise<string> {
   return sha256;
 }
 
+export async function retryOnRateLimit<T>(fn: () => Promise<T>): Promise<T> {
+  return retryWithBackoff(fn, (error: any) => {
+    return error?.status === 403 && error?.message?.includes("rate limit");
+  });
+}
+
 export async function getReleaseInfo(
   owner: string,
   repo: string,
@@ -77,7 +84,9 @@ export async function getReleaseInfo(
   auth_token?: string,
 ): Promise<[string, string]> {
   const octokit = getOctokit(auth_token);
-  const release = await getRelease(octokit, owner, repo, version);
+  const release = await retryOnRateLimit(() =>
+    getRelease(octokit, owner, repo, version),
+  );
   const url = await getReleaseDownloadUrl(release);
   const sha256sum = await getReleaseSha256sum(release);
   return [url, sha256sum];
