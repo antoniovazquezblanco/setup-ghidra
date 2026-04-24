@@ -34508,7 +34508,7 @@ function error(message, properties = {}) {
  * @param properties optional properties to add to the annotation.
  */
 function warning(message, properties = {}) {
-    issueCommand('warning', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    command_issueCommand('warning', utils_toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Adds a notice issue
@@ -38958,7 +38958,35 @@ function getOctokitOptions(token, options) {
     return opts;
 }
 //# sourceMappingURL=utils.js.map
+;// CONCATENATED MODULE: ./src/retry.ts
+
+const INITIAL_RETRY_DELAY_MS = 5000;
+const MAX_TOTAL_RETRY_DELAY_MS = 300000;
+async function retryWithBackoff(fn, isRetryable) {
+    let totalDelayMs = 0;
+    let attempt = 0;
+    while (true) {
+        try {
+            return await fn();
+        }
+        catch (error) {
+            if (!isRetryable(error)) {
+                throw error;
+            }
+            const delayMs = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
+            totalDelayMs += delayMs;
+            if (totalDelayMs > MAX_TOTAL_RETRY_DELAY_MS) {
+                throw new Error(`Request failed after retrying for over ${MAX_TOTAL_RETRY_DELAY_MS / 1000} seconds. Original error: ${error.message}`);
+            }
+            warning(`Retryable error encountered. Retrying in ${delayMs / 1000} seconds... (attempt ${attempt + 1})`);
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
+            attempt++;
+        }
+    }
+}
+
 ;// CONCATENATED MODULE: ./src/github_helper.ts
+
 
 
 function getOctokit(auth_token) {
@@ -39007,9 +39035,14 @@ async function getReleaseSha256sum(release) {
     const sha256 = match.value[1];
     return sha256;
 }
+async function retryOnRateLimit(fn) {
+    return retryWithBackoff(fn, (error) => {
+        return error?.status === 403 && error?.message?.includes("rate limit");
+    });
+}
 async function getReleaseInfo(owner, repo, version, auth_token) {
     const octokit = getOctokit(auth_token);
-    const release = await getRelease(octokit, owner, repo, version);
+    const release = await retryOnRateLimit(() => getRelease(octokit, owner, repo, version));
     const url = await getReleaseDownloadUrl(release);
     const sha256sum = await getReleaseSha256sum(release);
     return [url, sha256sum];
@@ -39821,9 +39854,13 @@ function _unique(values) {
 
 
 
+
 async function downloadWithExtension(url) {
     const extension = external_path_namespaceObject.extname(url);
-    let assetPath = await downloadTool(url);
+    let assetPath = await retryWithBackoff(() => downloadTool(url), (error) => {
+        const status = error?.statusCode ?? error?.status;
+        return typeof status === "number" && status >= 500;
+    });
     if (external_path_namespaceObject.extname(assetPath) !== extension) {
         external_fs_namespaceObject.renameSync(assetPath, assetPath + extension);
         return assetPath + extension;
