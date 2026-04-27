@@ -30,7 +30,7 @@
     "@types/jest": "^30.0.0",
     "@vercel/ncc": "^0.38.4",
     "jest": "^30.3.0",
-    "npm-check-updates": "^21.0.2",
+    "npm-check-updates": "^22.0.1",
     "prettier": "^3.8.3",
     "ts-jest": "^29.4.9",
     "ts-node": "^10.9.2"
