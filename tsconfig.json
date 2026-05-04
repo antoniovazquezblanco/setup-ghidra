@@ -14,5 +14,6 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true
-  }
+  },
+  "exclude": ["**/*.test.ts"]
 }
