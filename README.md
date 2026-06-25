@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/antoniovazquezblanco/setup-ghidra/actions/workflows/main.yml/badge.svg)](https://github.com/antoniovazquezblanco/setup-ghidra/actions/workflows/main.yml)
 [![CodeQL](https://github.com/antoniovazquezblanco/setup-ghidra/actions/workflows/codeql.yml/badge.svg)](https://github.com/antoniovazquezblanco/setup-ghidra/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/antoniovazquezblanco/setup-ghidra/badge)](https://scorecard.dev/viewer/?uri=github.com/antoniovazquezblanco/setup-ghidra)
 
 This action sets up a Ghidra environment for use in actions.
 Specific Ghidra versions can be selected and even releases from custom forks can be used.
