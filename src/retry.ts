@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Antonio Vázquez Blanco
+// SPDX-License-Identifier: MIT
+
 import { warning } from "@actions/core";
 
 export const INITIAL_RETRY_DELAY_MS = 5000;

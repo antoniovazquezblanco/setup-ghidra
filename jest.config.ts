@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Antonio Vázquez Blanco
+// SPDX-License-Identifier: MIT
+
 /**
  * For a detailed explanation regarding each configuration property, visit:
  * https://jestjs.io/docs/configuration

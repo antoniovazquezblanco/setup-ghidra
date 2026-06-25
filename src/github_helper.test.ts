@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Antonio Vázquez Blanco
+// SPDX-License-Identifier: MIT
+
 import {
   jest,
   describe,

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Antonio Vázquez Blanco
+// SPDX-License-Identifier: MIT
+
 import { Octokit } from "@octokit/rest";
 import { getOctokitOptions } from "@actions/github/lib/utils";
 import { retryWithBackoff } from "./retry.js";

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Antonio Vázquez Blanco
+// SPDX-License-Identifier: MIT
+
 import * as tc from "@actions/tool-cache";
 import * as core from "@actions/core";
 import * as path from "path";

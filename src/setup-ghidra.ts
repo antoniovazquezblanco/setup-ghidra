@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Antonio Vázquez Blanco
+// SPDX-License-Identifier: MIT
+
 import * as core from "@actions/core";
 import * as github_helper from "./github_helper.js";
 import * as installer from "./installer.js";
