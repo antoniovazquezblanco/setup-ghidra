@@ -39248,6 +39248,8 @@ function getOctokitOptions(token, options) {
 }
 //# sourceMappingURL=utils.js.map
 ;// CONCATENATED MODULE: ./src/retry.ts
+// SPDX-FileCopyrightText: 2026 Antonio Vázquez Blanco
+// SPDX-License-Identifier: MIT
 
 const INITIAL_RETRY_DELAY_MS = 5000;
 const MAX_TOTAL_RETRY_DELAY_MS = 300000;
@@ -39275,6 +39277,8 @@ async function retryWithBackoff(fn, isRetryable) {
 }
 
 ;// CONCATENATED MODULE: ./src/github_helper.ts
+// SPDX-FileCopyrightText: 2026 Antonio Vázquez Blanco
+// SPDX-License-Identifier: MIT
 
 
 
@@ -40138,6 +40142,8 @@ function _unique(values) {
 }
 //# sourceMappingURL=tool-cache.js.map
 ;// CONCATENATED MODULE: ./src/installer.ts
+// SPDX-FileCopyrightText: 2026 Antonio Vázquez Blanco
+// SPDX-License-Identifier: MIT
 
 
 
@@ -40194,6 +40200,8 @@ async function installFromUrl(url, sha256sum) {
 }
 
 ;// CONCATENATED MODULE: ./src/setup-ghidra.ts
+// SPDX-FileCopyrightText: 2026 Antonio Vázquez Blanco
+// SPDX-License-Identifier: MIT
 
 
 
