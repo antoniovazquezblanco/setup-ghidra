@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@vercel/ncc": "^0.44.0",
+    "@vercel/ncc": "^0.44.1",
     "jest": "^30.4.2",
     "npm-check-updates": "^22.2.9",
     "prettier": "^3.9.2",
