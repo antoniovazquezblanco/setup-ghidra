@@ -32,7 +32,7 @@
     "@vercel/ncc": "^0.44.1",
     "jest": "^30.4.2",
     "npm-check-updates": "^22.2.9",
-    "prettier": "^3.9.4",
+    "prettier": "^3.9.5",
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2"
   },
