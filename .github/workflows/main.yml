@@ -70,8 +70,8 @@ jobs:
     needs: build
     permissions:
       contents: read
-      checks: write
-      pull-requests: write
+      pull-requests: read
+      code-quality: write
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -94,7 +94,12 @@ jobs:
         run: npm test
 
       - name: Upload coverage
-        uses: ArtiomTr/jest-coverage-report-action@262a7bb0b20c4d1d6b6b026af0f008f78da72788 # v2.3.1
-        continue-on-error: true
+        if: >-
+          matrix.os == 'ubuntu-latest' &&
+          (github.event_name != 'pull_request' ||
+           github.event.pull_request.head.repo.full_name == github.repository)
+        uses: actions/upload-code-coverage@d8e329117199404bba6fc81efe8093dc7c015e34 # v1.4.2
         with:
-          test-script: npm test
+          file: coverage/cobertura-coverage.xml
+          language: TypeScript
+          label: code-coverage/jest
