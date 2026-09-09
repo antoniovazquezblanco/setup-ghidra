@@ -16,7 +16,15 @@ const config: Config = {
   setupFiles: ["<rootDir>/jest.setup.ts"],
   verbose: true,
   collectCoverage: true,
+  collectCoverageFrom: [
+    "src/**/*.ts",
+    "!src/**/*.test.ts",
+    // The entrypoint runs on import; the v8 provider would execute it.
+    "!src/setup-ghidra.ts",
+  ],
   coverageDirectory: "coverage",
+  // Cobertura is what GitHub Code Quality ingests.
+  coverageReporters: ["text", "cobertura"],
   coverageProvider: "v8",
 };
 
