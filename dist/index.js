@@ -34822,10 +34822,10 @@ function getBooleanInput(name, options) {
 function setOutput(name, value) {
     const filePath = process.env['GITHUB_OUTPUT'] || '';
     if (filePath) {
-        return issueFileCommand('OUTPUT', prepareKeyValueMessage(name, value));
+        return file_command_issueFileCommand('OUTPUT', file_command_prepareKeyValueMessage(name, value));
     }
-    process.stdout.write(os.EOL);
-    issueCommand('set-output', { name }, toCommandValue(value));
+    process.stdout.write(external_os_namespaceObject.EOL);
+    command_issueCommand('set-output', { name }, utils_toCommandValue(value));
 }
 /**
  * Enables or disables the echoing of commands into stdout for the rest of the step.
@@ -40841,6 +40841,30 @@ async function installFromUrl(url, sha256sum) {
     console.info(`Caching Ghidra in ${ghidraPath}...`);
     return await cacheDir(ghidraPath, "ghidra", version);
 }
+/**
+ * Obtain the version of an installed Ghidra distribution.
+ *
+ * Every Ghidra distribution ships an application.properties file describing
+ * itself. Reading the version from it makes the reported version accurate
+ * regardless of how the distribution was located (release or download url).
+ */
+function getInstalledVersion(ghidraPath) {
+    const propertiesPath = external_path_namespaceObject.join(ghidraPath, "Ghidra", "application.properties");
+    let properties = "";
+    try {
+        properties = external_fs_namespaceObject.readFileSync(propertiesPath, "utf8");
+    }
+    catch {
+        warning(`Could not read '${propertiesPath}'! Unable to determine the installed Ghidra version...`);
+        return "";
+    }
+    const match = properties.match(/^application\.version\s*=\s*(.+)$/m);
+    if (!match) {
+        warning(`Could not find an application version in '${propertiesPath}'! Unable to determine the installed Ghidra version...`);
+        return "";
+    }
+    return match[1].trim();
+}
 
 ;// CONCATENATED MODULE: ./src/setup-ghidra.ts
 // SPDX-FileCopyrightText: 2026 Antonio Vázquez Blanco
@@ -40896,6 +40920,8 @@ async function run() {
         let ghidraPath = await installFromUrl(paramDownloadUrl, paramSha256sum);
         // Set environmental variable
         exportVariable("GHIDRA_INSTALL_DIR", ghidraPath);
+        // Set output
+        setOutput("version", getInstalledVersion(ghidraPath));
     }
     catch (err) {
         setFailed(err.message);

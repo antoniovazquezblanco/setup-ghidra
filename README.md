@@ -8,6 +8,7 @@ This action sets up a Ghidra environment for use in actions.
 Specific Ghidra versions can be selected and even releases from custom forks can be used.
 
 This action will automatically set the `GHIDRA_INSTALL_PATH` variable in your environment.
+The installed Ghidra version is exposed as the `version` output.
 
 The action will fail if no matching versions are found.
 
@@ -48,6 +49,26 @@ steps:
     run: gradle -PGHIDRA_INSTALL_DIR=${{ env.GHIDRA_INSTALL_DIR }}
 ```
 
+**Using the installed version:**
+
+The `version` output contains the version that has been installed. This is
+specially useful when installing the `latest` version and its exact number is
+needed afterwards.
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - uses: actions/setup-java@v4
+  - uses: antoniovazquezblanco/setup-ghidra@v2
+    id: setup-ghidra
+  - name: Build the extension
+    run: gradle -PGHIDRA_INSTALL_DIR=${{ env.GHIDRA_INSTALL_DIR }}
+  - uses: actions/upload-artifact@v4
+    with:
+      name: MyGhidraExtension-ci-ghidra-${{ steps.setup-ghidra.outputs.version }}
+      path: dist/*.zip
+```
+
 **Reference:**
 
 For a full reference of action parameters see [action.yml](action.yml)
@@ -84,3 +105,9 @@ For a full reference of action parameters see [action.yml](action.yml)
     # This is optional.
     auth_token: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+## Outputs
+
+| Name      | Description                                                                |
+| --------- | -------------------------------------------------------------------------- |
+| `version` | Version of the Ghidra distribution that has been installed, e.g. `11.3.2`. |

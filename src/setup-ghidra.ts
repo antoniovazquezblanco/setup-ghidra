@@ -86,6 +86,9 @@ async function run() {
 
     // Set environmental variable
     core.exportVariable("GHIDRA_INSTALL_DIR", ghidraPath);
+
+    // Set output
+    core.setOutput("version", installer.getInstalledVersion(ghidraPath));
   } catch (err) {
     core.setFailed((err as Error).message);
   }

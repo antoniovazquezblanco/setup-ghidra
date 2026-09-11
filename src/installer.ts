@@ -71,3 +71,38 @@ export async function installFromUrl(
   console.info(`Caching Ghidra in ${ghidraPath}...`);
   return await tc.cacheDir(ghidraPath, "ghidra", version);
 }
+
+/**
+ * Obtain the version of an installed Ghidra distribution.
+ *
+ * Every Ghidra distribution ships an application.properties file describing
+ * itself. Reading the version from it makes the reported version accurate
+ * regardless of how the distribution was located (release or download url).
+ */
+export function getInstalledVersion(ghidraPath: string): string {
+  const propertiesPath = path.join(
+    ghidraPath,
+    "Ghidra",
+    "application.properties",
+  );
+
+  let properties = "";
+  try {
+    properties = fs.readFileSync(propertiesPath, "utf8");
+  } catch {
+    core.warning(
+      `Could not read '${propertiesPath}'! Unable to determine the installed Ghidra version...`,
+    );
+    return "";
+  }
+
+  const match = properties.match(/^application\.version\s*=\s*(.+)$/m);
+  if (!match) {
+    core.warning(
+      `Could not find an application version in '${propertiesPath}'! Unable to determine the installed Ghidra version...`,
+    );
+    return "";
+  }
+
+  return match[1].trim();
+}
