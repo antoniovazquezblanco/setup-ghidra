@@ -52,21 +52,34 @@ async function run() {
     let paramSha256sum = core.getInput("sha256sum");
     let paramAuthToken = core.getInput("auth_token");
 
+    // Log the inputs so that a job log is enough to tell what the action was
+    // asked to do. The auth token is never printed, only whether one was given.
+    core.startGroup("Action inputs");
+    core.info(`download_url: ${paramDownloadUrl || "(empty)"}`);
+    core.info(`owner: ${paramOwner}`);
+    core.info(`repo: ${paramRepo}`);
+    core.info(`version: ${paramVersion}`);
+    core.info(`sha256sum: ${paramSha256sum}`);
+    core.info(`auth_token: ${paramAuthToken ? "(provided)" : "(empty)"}`);
+    core.endGroup();
+
     // Check parameters
     paramCheck(paramVersion, paramSha256sum, paramDownloadUrl);
 
     // First obtain a valid download url..
     let sha256sum = null;
     if (!paramDownloadUrl) {
-      core.debug("Using owner, repo and version inputs to locate a release...");
+      core.info("Using owner, repo and version inputs to locate a release...");
       [paramDownloadUrl, sha256sum] = await github_helper.getReleaseInfo(
         paramOwner,
         paramRepo,
         paramVersion,
         paramAuthToken,
       );
+      core.info(`Release download url is '${paramDownloadUrl}'...`);
+      core.info(`Release sha256sum is '${sha256sum}'...`);
     } else {
-      core.debug(
+      core.info(
         "The download_url input was provided; ignoring owner, repo and version inputs...",
       );
     }
@@ -88,7 +101,15 @@ async function run() {
     core.exportVariable("GHIDRA_INSTALL_DIR", ghidraPath);
 
     // Set output
-    core.setOutput("version", installer.getInstalledVersion(ghidraPath));
+    let version = installer.getInstalledVersion(ghidraPath);
+    core.setOutput("version", version);
+
+    // Log the outputs so that they may be compared against the inputs that
+    // produced them.
+    core.startGroup("Action outputs");
+    core.info(`version: ${version || "(unknown)"}`);
+    core.info(`GHIDRA_INSTALL_DIR: ${ghidraPath}`);
+    core.endGroup();
   } catch (err) {
     core.setFailed((err as Error).message);
   }

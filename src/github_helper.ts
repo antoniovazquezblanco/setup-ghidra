@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Antonio Vázquez Blanco
 // SPDX-License-Identifier: MIT
 
+import * as core from "@actions/core";
 import { Octokit } from "@octokit/rest";
 import { getOctokitOptions } from "@actions/github/lib/utils";
 import { retryWithBackoff } from "./retry.js";
@@ -89,6 +90,9 @@ export async function getReleaseInfo(
   const octokit = getOctokit(auth_token);
   const release = await retryOnRateLimit(() =>
     getRelease(octokit, owner, repo, version),
+  );
+  core.info(
+    `Version '${version}' of '${owner}/${repo}' resolved to release '${release.tag_name}'...`,
   );
   const url = await getReleaseDownloadUrl(release);
   const sha256sum = await getReleaseSha256sum(release);
