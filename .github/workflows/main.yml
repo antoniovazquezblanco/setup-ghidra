@@ -92,9 +92,15 @@ jobs:
 
       - name: Test
         run: npm test
+        env:
+          # Tests query the GitHub API. Authenticating them avoids the low rate
+          # limits that unauthenticated requests get in shared runners.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload coverage
         uses: ArtiomTr/jest-coverage-report-action@262a7bb0b20c4d1d6b6b026af0f008f78da72788 # v2.3.1
         continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           test-script: npm test

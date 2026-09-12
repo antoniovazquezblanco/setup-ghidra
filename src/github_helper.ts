@@ -6,6 +6,21 @@ import { Octokit } from "@octokit/rest";
 import { getOctokitOptions } from "@actions/github/lib/utils";
 import { retryWithBackoff } from "./retry.js";
 
+/**
+ * Subset of the GitHub API that is needed to locate a release.
+ *
+ * Describing it structurally instead of depending on the Octokit type allows
+ * the release lookup to be tested against a plain object.
+ */
+export type ReleaseApi = {
+  rest: {
+    repos: {
+      getLatestRelease(params: any): Promise<any>;
+      getReleaseByTag(params: any): Promise<any>;
+    };
+  };
+};
+
 export function getOctokit(auth_token?: string) {
   let options = {};
   if (auth_token) {
@@ -15,24 +30,24 @@ export function getOctokit(auth_token?: string) {
 }
 
 async function getRelease(
-  octokit: Octokit,
+  api: ReleaseApi,
   owner: string,
   repo: string,
   version: string,
 ): Promise<any> {
   if (version == "latest") {
-    return getLatestRelease(octokit, owner, repo);
+    return getLatestRelease(api, owner, repo);
   } else {
-    return getReleaseByTag(octokit, owner, repo, version);
+    return getReleaseByTag(api, owner, repo, version);
   }
 }
 
 async function getLatestRelease(
-  octokit: Octokit,
+  api: ReleaseApi,
   owner: string,
   repo: string,
 ): Promise<any> {
-  let response = await octokit.rest.repos.getLatestRelease({
+  let response = await api.rest.repos.getLatestRelease({
     owner: owner,
     repo: repo,
   });
@@ -45,13 +60,13 @@ async function getLatestRelease(
 }
 
 async function getReleaseByTag(
-  octokit: Octokit,
+  api: ReleaseApi,
   owner: string,
   repo: string,
   tag: string,
 ): Promise<any> {
   let tagName = `Ghidra_${tag}_build`;
-  let response = await octokit.rest.repos.getReleaseByTag({
+  let response = await api.rest.repos.getReleaseByTag({
     owner: owner,
     repo: repo,
     tag: tagName,
@@ -64,15 +79,27 @@ async function getReleaseByTag(
   return response.data;
 }
 
-async function getReleaseDownloadUrl(release: any): Promise<string> {
+function getReleaseDownloadUrl(release: any): string {
+  if (!release.assets || release.assets.length == 0) {
+    throw new Error(
+      `Release '${release.tag_name}' does not contain any downloadable asset!`,
+    );
+  }
   return release.assets[0].browser_download_url;
 }
 
-async function getReleaseSha256sum(release: any): Promise<string> {
-  const matches = release.body.matchAll(/SHA-256: *`*([\da-fA-F]{64})`*/g);
-  const match = matches.next();
-  const sha256 = match.value[1];
-  return sha256;
+/**
+ * Obtain the SHA256 sum that release notes advertise for the distribution.
+ *
+ * Returns an empty string if the release notes do not contain one so that
+ * installations that do not need an online sum are still possible.
+ */
+function getReleaseSha256sum(release: any): string {
+  const match = /SHA-256: *`*([\da-fA-F]{64})`*/.exec(release.body ?? "");
+  if (!match) {
+    return "";
+  }
+  return match[1];
 }
 
 export async function retryOnRateLimit<T>(fn: () => Promise<T>): Promise<T> {
@@ -81,20 +108,26 @@ export async function retryOnRateLimit<T>(fn: () => Promise<T>): Promise<T> {
   });
 }
 
+export async function getReleaseInfoWithApi(
+  api: ReleaseApi,
+  owner: string,
+  repo: string,
+  version: string,
+): Promise<[string, string]> {
+  const release = await retryOnRateLimit(() =>
+    getRelease(api, owner, repo, version),
+  );
+  core.info(
+    `Version '${version}' of '${owner}/${repo}' resolved to release '${release.tag_name}'...`,
+  );
+  return [getReleaseDownloadUrl(release), getReleaseSha256sum(release)];
+}
+
 export async function getReleaseInfo(
   owner: string,
   repo: string,
   version: string,
   auth_token?: string,
 ): Promise<[string, string]> {
-  const octokit = getOctokit(auth_token);
-  const release = await retryOnRateLimit(() =>
-    getRelease(octokit, owner, repo, version),
-  );
-  core.info(
-    `Version '${version}' of '${owner}/${repo}' resolved to release '${release.tag_name}'...`,
-  );
-  const url = await getReleaseDownloadUrl(release);
-  const sha256sum = await getReleaseSha256sum(release);
-  return [url, sha256sum];
+  return getReleaseInfoWithApi(getOctokit(auth_token), owner, repo, version);
 }

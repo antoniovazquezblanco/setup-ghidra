@@ -40054,16 +40054,16 @@ function getOctokit(auth_token) {
     }
     return new dist_src_Octokit(options);
 }
-async function getRelease(octokit, owner, repo, version) {
+async function getRelease(api, owner, repo, version) {
     if (version == "latest") {
-        return getLatestRelease(octokit, owner, repo);
+        return getLatestRelease(api, owner, repo);
     }
     else {
-        return getReleaseByTag(octokit, owner, repo, version);
+        return getReleaseByTag(api, owner, repo, version);
     }
 }
-async function getLatestRelease(octokit, owner, repo) {
-    let response = await octokit.rest.repos.getLatestRelease({
+async function getLatestRelease(api, owner, repo) {
+    let response = await api.rest.repos.getLatestRelease({
         owner: owner,
         repo: repo,
     });
@@ -40072,9 +40072,9 @@ async function getLatestRelease(octokit, owner, repo) {
     }
     return response.data;
 }
-async function getReleaseByTag(octokit, owner, repo, tag) {
+async function getReleaseByTag(api, owner, repo, tag) {
     let tagName = `Ghidra_${tag}_build`;
-    let response = await octokit.rest.repos.getReleaseByTag({
+    let response = await api.rest.repos.getReleaseByTag({
         owner: owner,
         repo: repo,
         tag: tagName,
@@ -40084,27 +40084,37 @@ async function getReleaseByTag(octokit, owner, repo, tag) {
     }
     return response.data;
 }
-async function getReleaseDownloadUrl(release) {
+function getReleaseDownloadUrl(release) {
+    if (!release.assets || release.assets.length == 0) {
+        throw new Error(`Release '${release.tag_name}' does not contain any downloadable asset!`);
+    }
     return release.assets[0].browser_download_url;
 }
-async function getReleaseSha256sum(release) {
-    const matches = release.body.matchAll(/SHA-256: *`*([\da-fA-F]{64})`*/g);
-    const match = matches.next();
-    const sha256 = match.value[1];
-    return sha256;
+/**
+ * Obtain the SHA256 sum that release notes advertise for the distribution.
+ *
+ * Returns an empty string if the release notes do not contain one so that
+ * installations that do not need an online sum are still possible.
+ */
+function getReleaseSha256sum(release) {
+    const match = /SHA-256: *`*([\da-fA-F]{64})`*/.exec(release.body ?? "");
+    if (!match) {
+        return "";
+    }
+    return match[1];
 }
 async function retryOnRateLimit(fn) {
     return retryWithBackoff(fn, (error) => {
         return error?.status === 403 && error?.message?.includes("rate limit");
     });
 }
-async function getReleaseInfo(owner, repo, version, auth_token) {
-    const octokit = getOctokit(auth_token);
-    const release = await retryOnRateLimit(() => getRelease(octokit, owner, repo, version));
+async function getReleaseInfoWithApi(api, owner, repo, version) {
+    const release = await retryOnRateLimit(() => getRelease(api, owner, repo, version));
     info(`Version '${version}' of '${owner}/${repo}' resolved to release '${release.tag_name}'...`);
-    const url = await getReleaseDownloadUrl(release);
-    const sha256sum = await getReleaseSha256sum(release);
-    return [url, sha256sum];
+    return [getReleaseDownloadUrl(release), getReleaseSha256sum(release)];
+}
+async function getReleaseInfo(owner, repo, version, auth_token) {
+    return getReleaseInfoWithApi(getOctokit(auth_token), owner, repo, version);
 }
 
 // EXTERNAL MODULE: ./node_modules/semver/index.js

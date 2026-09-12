@@ -19,13 +19,15 @@ describe("Installer tests", () => {
     process.env["RUNNER_TOOL_CACHE"] = path.join(sourceDir, "runner", "tools");
     process.env["RUNNER_TEMP"] = path.join(sourceDir, "runner", "temp");
 
-    // Get a valid info for installation...
+    // Get a valid info for installation. Any available token is used to avoid
+    // the rate limits that unauthenticated API usage is subject to...
     [url, sha256sum] = await github_helper.getReleaseInfo(
       "NationalSecurityAgency",
       "ghidra",
       "latest",
+      process.env["GITHUB_TOKEN"],
     );
-  });
+  }, 60 * 1000);
 
   afterAll(async () => {
     // After the tests, remove the runner directory
