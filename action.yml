@@ -23,6 +23,8 @@ inputs:
 outputs:
   version:
     description: "Version of the Ghidra distribution that has been installed."
+  java_version:
+    description: "Java version required to build against the installed Ghidra (application.java.compiler), e.g. `25`."
 
 runs:
   using: "node24"

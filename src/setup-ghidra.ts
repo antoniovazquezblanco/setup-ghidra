@@ -100,14 +100,17 @@ async function run() {
     // Set environmental variable
     core.exportVariable("GHIDRA_INSTALL_DIR", ghidraPath);
 
-    // Set output
+    // Set outputs
     let version = installer.getInstalledVersion(ghidraPath);
     core.setOutput("version", version);
+    let javaVersion = installer.getRequiredJavaVersion(ghidraPath);
+    core.setOutput("java_version", javaVersion);
 
     // Log the outputs so that they may be compared against the inputs that
     // produced them.
     core.startGroup("Action outputs");
     core.info(`version: ${version || "(unknown)"}`);
+    core.info(`java_version: ${javaVersion || "(unknown)"}`);
     core.info(`GHIDRA_INSTALL_DIR: ${ghidraPath}`);
     core.endGroup();
   } catch (err) {
