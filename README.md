@@ -7,8 +7,9 @@
 This action sets up a Ghidra environment for use in actions.
 Specific Ghidra versions can be selected and even releases from custom forks can be used.
 
-This action will automatically set the `GHIDRA_INSTALL_PATH` variable in your environment.
-The installed Ghidra version is exposed as the `version` output.
+This action will automatically set the `GHIDRA_INSTALL_DIR` variable in your environment.
+The installed Ghidra version is exposed as the `version` output and the Java
+version it requires as the `java_version` output.
 
 The action will fail if no matching versions are found.
 
@@ -16,13 +17,17 @@ The action will fail if no matching versions are found.
 
 **Basic:**
 
-This example just clones your code, setups java and setups Ghidra from the oficial repo to the latest release found.
+This example just clones your code, setups Ghidra from the oficial repo to the latest release found and setups the java version it requires.
 
 ```yaml
 steps:
   - uses: actions/checkout@v4
-  - uses: actions/setup-java@v4
   - uses: antoniovazquezblanco/setup-ghidra@v2
+    id: setup-ghidra
+  - uses: actions/setup-java@v6
+    with:
+      distribution: temurin
+      java-version: ${{ steps.setup-ghidra.outputs.java_version }}
 ```
 
 **Advanced:**
@@ -39,14 +44,18 @@ strategy:
 
 steps:
   - uses: actions/checkout@v4
-  - uses: actions/setup-java@v4
-  - uses: gradle/actions/setup-gradle@v3
   - uses: antoniovazquezblanco/setup-ghidra@v2
+    id: setup-ghidra
     with:
       auth_token: ${{ secrets.GITHUB_TOKEN }}
       version: ${{ matrix.ghidra }}
+  - uses: actions/setup-java@v6
+    with:
+      distribution: temurin
+      java-version: ${{ steps.setup-ghidra.outputs.java_version }}
+  - uses: gradle/actions/setup-gradle@v3
   - name: Build something with Ghidra ${{ matrix.ghidra }}
-    run: gradle -PGHIDRA_INSTALL_DIR=${{ env.GHIDRA_INSTALL_DIR }}
+    run: gradle
 ```
 
 **Using the installed version:**
@@ -58,15 +67,42 @@ needed afterwards.
 ```yaml
 steps:
   - uses: actions/checkout@v4
-  - uses: actions/setup-java@v4
   - uses: antoniovazquezblanco/setup-ghidra@v2
     id: setup-ghidra
+  - uses: actions/setup-java@v6
+    with:
+      distribution: temurin
+      java-version: ${{ steps.setup-ghidra.outputs.java_version }}
   - name: Build the extension
-    run: gradle -PGHIDRA_INSTALL_DIR=${{ env.GHIDRA_INSTALL_DIR }}
+    run: gradle
   - uses: actions/upload-artifact@v4
     with:
       name: MyGhidraExtension-ci-ghidra-${{ steps.setup-ghidra.outputs.version }}
       path: dist/*.zip
+```
+
+**Using the required Java version:**
+
+The `java_version` output contains the Java version needed to build against the
+installed Ghidra, as Ghidra sets the source and target compatibility of
+extensions to it. Run setup-ghidra before setup-java to use it; this is fine
+because setup-ghidra itself does not need Java.
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - name: Install Ghidra
+    id: setup-ghidra
+    uses: antoniovazquezblanco/setup-ghidra@v2
+    with:
+      auth_token: ${{ secrets.GITHUB_TOKEN }}
+  - name: Install Java
+    uses: actions/setup-java@v6
+    with:
+      distribution: temurin
+      java-version: ${{ steps.setup-ghidra.outputs.java_version }}
+  - name: Build the extension
+    run: gradle
 ```
 
 **Reference:**
@@ -108,6 +144,7 @@ For a full reference of action parameters see [action.yml](action.yml)
 
 ## Outputs
 
-| Name      | Description                                                                |
-| --------- | -------------------------------------------------------------------------- |
-| `version` | Version of the Ghidra distribution that has been installed, e.g. `11.3.2`. |
+| Name           | Description                                                                                           |
+| -------------- | ----------------------------------------------------------------------------------------------------- |
+| `version`      | Version of the Ghidra distribution that has been installed, e.g. `11.3.2`.                            |
+| `java_version` | Java version required to build against the installed Ghidra (`application.java.compiler`), e.g. `25`. |

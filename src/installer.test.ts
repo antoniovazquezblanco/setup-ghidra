@@ -40,6 +40,7 @@ describe("Installer tests", () => {
       let tool_path = await installer.installFromUrl(url, sha256sum);
       expect(fs.existsSync(path.join(tool_path, "ghidraRun"))).toBe(true);
       expect(installer.getInstalledVersion(tool_path)).toMatch(/^\d+(\.\d+)*$/);
+      expect(installer.getRequiredJavaVersion(tool_path)).toMatch(/^\d+$/);
     },
     20 * 60 * 1000,
   );
@@ -93,5 +94,50 @@ describe("Installed version tests", () => {
       "application.name=Ghidra\napplication.release.name=PUBLIC\n",
     );
     expect(installer.getInstalledVersion(installDir)).toBe("");
+  });
+
+  it("Reads the required Java version out of application.properties", () => {
+    const installDir = createInstallation(
+      "java_compiler",
+      "application.version=12.2\napplication.java.min=21\napplication.java.max=\napplication.java.compiler=25\n",
+    );
+    expect(installer.getRequiredJavaVersion(installDir)).toBe("25");
+  });
+
+  it("Reads the required Java version out of CRLF terminated files", () => {
+    const installDir = createInstallation(
+      "java_crlf",
+      "application.java.min=25\r\napplication.java.max=\r\napplication.java.compiler=25\r\n",
+    );
+    expect(installer.getRequiredJavaVersion(installDir)).toBe("25");
+  });
+
+  it("Falls back to the minimum Java version if the compiler one is missing", () => {
+    const installDir = createInstallation(
+      "java_missing_compiler",
+      "application.version=12.2\napplication.java.min=21\napplication.java.max=\n",
+    );
+    expect(installer.getRequiredJavaVersion(installDir)).toBe("21");
+  });
+
+  it("Falls back to the minimum Java version if the compiler one is empty", () => {
+    const installDir = createInstallation(
+      "java_empty_compiler",
+      "application.java.min=21\napplication.java.max=\napplication.java.compiler=\napplication.python.supported=3.13\n",
+    );
+    expect(installer.getRequiredJavaVersion(installDir)).toBe("21");
+  });
+
+  it("Returns an empty Java version if both Java properties are missing", () => {
+    const installDir = createInstallation(
+      "java_missing_properties",
+      "application.name=Ghidra\napplication.version=12.2\n",
+    );
+    expect(installer.getRequiredJavaVersion(installDir)).toBe("");
+  });
+
+  it("Returns an empty Java version if application.properties is missing", () => {
+    const installDir = createInstallation("java_missing_file");
+    expect(installer.getRequiredJavaVersion(installDir)).toBe("");
   });
 });

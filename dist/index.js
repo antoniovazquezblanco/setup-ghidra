@@ -41209,6 +41209,35 @@ async function installFromUrl(url, sha256sum) {
     return await cacheDir(ghidraPath, "ghidra", version);
 }
 /**
+ * Read a property out of the application.properties file of an installed
+ * Ghidra distribution.
+ *
+ * The value of the first key in keys that is present and not empty is
+ * returned. Otherwise a warning is logged and an empty string is returned, so
+ * that an unexpected distribution layout never fails the action.
+ */
+function readApplicationProperty(ghidraPath, keys, description, subject) {
+    const propertiesPath = external_path_namespaceObject.join(ghidraPath, "Ghidra", "application.properties");
+    let properties = "";
+    try {
+        properties = external_fs_namespaceObject.readFileSync(propertiesPath, "utf8");
+    }
+    catch {
+        warning(`Could not read '${propertiesPath}'! Unable to determine ${subject}...`);
+        return "";
+    }
+    // Values are matched up to the end of their own line so that an empty
+    // property, such as application.java.max, never takes the next line.
+    for (const key of keys) {
+        const regex = new RegExp(`^${key.replaceAll(".", "\\.")}[ \\t]*=(.*)$`, "m");
+        const value = properties.match(regex)?.[1].trim();
+        if (value)
+            return value;
+    }
+    warning(`Could not find ${description} in '${propertiesPath}'! Unable to determine ${subject}...`);
+    return "";
+}
+/**
  * Obtain the version of an installed Ghidra distribution.
  *
  * Every Ghidra distribution ships an application.properties file describing
@@ -41216,21 +41245,18 @@ async function installFromUrl(url, sha256sum) {
  * regardless of how the distribution was located (release or download url).
  */
 function getInstalledVersion(ghidraPath) {
-    const propertiesPath = external_path_namespaceObject.join(ghidraPath, "Ghidra", "application.properties");
-    let properties = "";
-    try {
-        properties = external_fs_namespaceObject.readFileSync(propertiesPath, "utf8");
-    }
-    catch {
-        warning(`Could not read '${propertiesPath}'! Unable to determine the installed Ghidra version...`);
-        return "";
-    }
-    const match = properties.match(/^application\.version\s*=\s*(.+)$/m);
-    if (!match) {
-        warning(`Could not find an application version in '${propertiesPath}'! Unable to determine the installed Ghidra version...`);
-        return "";
-    }
-    return match[1].trim();
+    return readApplicationProperty(ghidraPath, ["application.version"], "an application version", "the installed Ghidra version");
+}
+/**
+ * Obtain the Java version required to build against an installed Ghidra.
+ *
+ * Ghidra's buildExtension.gradle sets the source and target compatibility of
+ * extensions from application.java.compiler, so building them needs a JDK of
+ * at least that version. Distributions lacking it fall back to the minimum
+ * Java version they support.
+ */
+function getRequiredJavaVersion(ghidraPath) {
+    return readApplicationProperty(ghidraPath, ["application.java.compiler", "application.java.min"], "a Java version", "the Java version required by the installed Ghidra");
 }
 
 ;// CONCATENATED MODULE: ./src/setup-ghidra.ts
@@ -41299,13 +41325,16 @@ async function run() {
         let ghidraPath = await installFromUrl(paramDownloadUrl, paramSha256sum);
         // Set environmental variable
         exportVariable("GHIDRA_INSTALL_DIR", ghidraPath);
-        // Set output
+        // Set outputs
         let version = getInstalledVersion(ghidraPath);
         setOutput("version", version);
+        let javaVersion = getRequiredJavaVersion(ghidraPath);
+        setOutput("java_version", javaVersion);
         // Log the outputs so that they may be compared against the inputs that
         // produced them.
         startGroup("Action outputs");
         info(`version: ${version || "(unknown)"}`);
+        info(`java_version: ${javaVersion || "(unknown)"}`);
         info(`GHIDRA_INSTALL_DIR: ${ghidraPath}`);
         endGroup();
     }
